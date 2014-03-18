@@ -10,6 +10,7 @@ dist
 build
 eggs
 parts
+config
 var
 sdist
 develop-eggs
