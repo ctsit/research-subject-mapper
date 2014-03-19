@@ -68,31 +68,6 @@ def init_redcap_interface(setup):
         
     logger.info("redcap interface initialzed")
     return properties
-        
-        
-
-def read_config(setup_json):
-    import json
-    logger.info('reading configuration file')
-    try:
-        json_data = open(setup_json)
-    except IOError:
-        #raise logger.error
-        print "file " + setup_json + " could not be opened"
-        raise
-
-    setup = json.load(json_data)
-    json_data.close()
-
-    # test for required parameters
-    required_parameters = ['redcap_uri', 'token']
-    for parameter in required_parameters:
-        if not parameter in setup:
-            raise LogException("read_config: required parameter, '"
-            + parameter  + "', is not set in " + setup_json)
-
-    logger.info('configuration file reading done')
-    return setup
 
 def get_data_from_redcap(properties,token, format_param='xml',
         type_param='flat', return_format='xml'):
