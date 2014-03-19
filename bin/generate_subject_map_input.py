@@ -26,7 +26,7 @@ def main():
     # Configure logging
     configure_logging()
     
-    setup_json = proj_root+'config-example/setup.json'
+    setup_json = proj_root+'config/setup.json'
     setup = read_config(setup_json)
     
     # Initialize Redcap Interface
