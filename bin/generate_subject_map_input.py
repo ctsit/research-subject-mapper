@@ -5,11 +5,11 @@ generate_subject_map_input.py -  Tool to generate patient-to-research subject ma
 
 """
 # Version 0.1 2013-11-18
-__authors__ = "Mohan Das Katragadda,Radha Krishna Kandula"
+__authors__ = "Mohan Das Katragadda"
 __copyright__ = "Copyright 2014, University of Florida"
 __license__ = "BSD 3-Clause"
 __version__ = "0.1"
-__email__ = "mohan88@ufl.edu,rkandula@ufl.edu"
+__email__ = "mohan88@ufl.edu"
 __status__ = "Development"
 
 import logging
@@ -177,6 +177,10 @@ def send_file_to_uri(site_URI, uname, password, remotepath, localpath):
     except Exception, e:
     	# closing the connection incase there is any exception
     	s.close()
+    	''' TODO
+    	Report should be sent to the concerned authority with the error
+    	message
+    	'''
         print str(e)
     pass
 
