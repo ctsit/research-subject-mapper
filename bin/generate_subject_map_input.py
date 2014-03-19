@@ -33,41 +33,7 @@ def main():
     properties = init_redcap_interface(setup)   
     
     response = get_data_from_redcap(properties,setup['token'])
-    print response
-    
-
-    
-def configure_logging():
-    '''Function to configure logging.
-
-        The log levels are defined below. Currently the log level is
-        set to DEBUG. All the logs in this level and above this level
-        are displayed. Depending on the maturity of the application
-        and release version these levels will be further
-        narrowed down to WARNING
-        
-
-        Level       Numeric value
-        =========================
-        CRITICAL        50
-        ERROR           40
-        WARNING         30
-        INFO            20
-        DEBUG           10
-        NOTSET          0
-
-    '''
-    # create logger
-    global logger
-    logger = logging.getLogger('research subject mapper')
-    # configuring logger file and log format
-    # setting default log level to Debug
-    logging.basicConfig(filename=proj_root+'log/research_subject_mapper.log',
-                        format='%(asctime)s - %(levelname)s - \
-                        %(name)s - %(message)s',
-                        datefmt='%m/%d/%Y %H:%M:%S',
-                        filemode='w',
-                        level=logging.DEBUG)    
+    print response  
     
 def init_redcap_interface(setup):
     '''This function initializes the variables requrired to get data from redcap
