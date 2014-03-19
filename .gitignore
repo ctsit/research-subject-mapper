@@ -35,6 +35,6 @@ nosetests.xml
 .project
 .pydevproject
 
-config-example/setup.json
-
 log/rsm.log
+
+rsm-devconfig/*

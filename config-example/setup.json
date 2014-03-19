@@ -1,4 +1,5 @@
 {
+
     
     "smtp_host_for_outbound_mail": "smtp.ufl.edu",
     "system_log_file": "log/research_subject_mapper.log",
@@ -13,9 +14,12 @@
 	
     "report_file_path2": "config/report.html",
     "report_xsl_path": "config/report.xsl",
-    "redcap_server":"https://ctsit-staging.ctsi.ufl.edu",
+	"project_name": "research subject mapper",
+    "redcap_server":"https://sample-redcapserver.org",
 
     "redcap_uri": "https://dev.hcvtargetrc.org/api/",
     "token": "9D4015DEF18826382BE70CC3477B94CB"
     
 }
+    
+
