@@ -31,10 +31,10 @@ def main():
     setup = read_config(setup_json)
     
     # Initialize Redcap Interface
-    properties = init_redcap_interface(setup)   
+    properties = init_redcap_interface(setup)
     
     response = get_data_from_redcap(properties,setup['token'])
-    print response  
+    print response
     
 def init_redcap_interface(setup):
     '''This function initializes the variables requrired to get data from redcap
@@ -162,18 +162,21 @@ def send_report(sender,receiver,body):
     except Exception:
         print "Error: unable to send email"
 
-def send_file_to_uri(site_URI):
+def send_file_to_uri(site_URI, uname, password, remotepath, localpath):
     '''This function puts the specified file to the given uri
 
     '''
     try:
-        s = sftp.Connection(host=site_URI, username='', password='')
-        remotepath = '/tmp/example.txt'
-        localpath = proj_root+'doc/README_DOC'
+    	# make a connection with uri and credentials
+        s = sftp.Connection(host=site_URI, username=uname, password=password)
+        # put the file at the designated location in the server
         s.put(localpath, remotepath)
+        # close the connection
         s.close()
 
     except Exception, e:
+    	# closing the connection incase there is any exception
+    	s.close()
         print str(e)
     pass
 
