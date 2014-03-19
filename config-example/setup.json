@@ -1,0 +1,8 @@
+{
+    "project_name": "research subject mapper",
+    
+    "redcap_server":"https://sample-redcapserver.org",
+
+    "redcap_uri": "https://sample-redcap-uri.org/sample-path/",
+    "token": "TOKENTOKENTOKENTOKENTOKENTOKENTOKEN"
+}
