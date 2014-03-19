@@ -16,6 +16,7 @@ import logging
 import httplib
 from urllib import urlencode
 import os
+import pysftp as sftp
 
 # This addresses the issues with relative paths
 file_dir = os.path.dirname(os.path.realpath(__file__))
@@ -161,6 +162,21 @@ def send_report(sender,receiver,body):
     except Exception:
         print "Error: unable to send email"
 
+def send_file_to_uri(site_URI):
+    '''This function puts the specified file to the given uri
+
+    '''
+    try:
+        s = sftp.Connection(host=site_URI, username='', password='')
+        remotepath = '/tmp/example.txt'
+        localpath = proj_root+'doc/README_DOC'
+        s.put(localpath, remotepath)
+        s.close()
+
+    except Exception, e:
+        print str(e)
+    pass
+
 class LogException(Exception):
     '''Class to log the exception
         logs the exception at an error level
@@ -200,7 +216,7 @@ def configure_logging():
     # configuring logger file and log format
     # setting default log level to Debug
     logging.basicConfig(filename=proj_root+'log/rsm.log',
-                		format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
+                        format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
                         datefmt='%m/%d/%Y %H:%M:%S',
                         filemode='w',
                         level=logging.DEBUG)
