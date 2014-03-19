@@ -37,4 +37,4 @@ nosetests.xml
 
 log/rsm.log
 
-rsm-devconfig/*
+rsm-devconfig/
