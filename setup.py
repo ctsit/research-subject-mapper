@@ -14,5 +14,6 @@ setup(
     install_requires=[
         "requests >= 2.2.1",
         "lxml >= 3.2.4",
+        "pysftp >= 0.2.2",
     ],
 )
