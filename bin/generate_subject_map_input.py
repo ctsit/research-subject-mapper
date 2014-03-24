@@ -11,7 +11,7 @@ __license__ = "BSD 3-Clause"
 __version__ = "0.1"
 __email__ = "mohan88@ufl.edu"
 __status__ = "Development"
-
+from lxml import etree
 import logging
 import httplib
 from urllib import urlencode
@@ -32,9 +32,25 @@ def main():
     
     # Initialize Redcap Interface
     properties = init_redcap_interface(setup)
-    
+    transform_xsl = setup['transform_xsl']
     response = get_data_from_redcap(properties,setup['token'])
-    print response
+    xml_tree = etree.fromstring(response)
+    xslt = etree.parse(transform_xsl)
+    transform = etree.XSLT(xslt)
+    xml_transformed = transform(xml_tree)
+    xml_str = etree.tostring(xml_transformed, method='xml', pretty_print=True)
+    # xml_str2 = etree.tostring(xml_tree, method='xml', pretty_print=True)
+    print xml_str
+
+    transform2_xsl = setup['transform2_xsl']
+    xslt = etree.parse(transform2_xsl)
+    transform = etree.XSLT(xslt)
+    xml_transformed2 = transform(xml_transformed)
+    xml_str2 = etree.tostring(xml_transformed2, method='xml', pretty_print=True)
+
+
+    print xml_str2
+
     
 def init_redcap_interface(setup):
     '''This function initializes the variables requrired to get data from redcap

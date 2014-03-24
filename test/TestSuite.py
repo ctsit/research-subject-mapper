@@ -17,6 +17,7 @@ import unittest
 '''
 from lxml import etree
 # from TestLog import TestLog
+from TestReadConfig import TestReadConfig
 
 class rsm_suite(unittest.TestSuite):
 
@@ -26,6 +27,7 @@ class rsm_suite(unittest.TestSuite):
         
         # add the test to the suite in the order to be tested
         # rsm_test_suite.addTest(TestLog)
+        redi_test_suite.addTest(TestReadConfig)
         
         # return the suite
         return unittest.TestSuite([rsm_test_suite])
