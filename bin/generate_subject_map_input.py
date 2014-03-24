@@ -17,6 +17,7 @@ import httplib
 from urllib import urlencode
 import os
 import pysftp as sftp
+from sftp_transactions import send_file_to_uri
 
 # This addresses the issues with relative paths
 file_dir = os.path.dirname(os.path.realpath(__file__))
@@ -29,12 +30,38 @@ def main():
     
     setup_json = proj_root+'config/setup.json'
     setup = read_config(setup_json)
-    
+    site_catalog_file = proj_root+setup['site_catalog']
     # Initialize Redcap Interface
-    properties = init_redcap_interface(setup)
+    #properties = init_redcap_interface(setup)
     
-    response = get_data_from_redcap(properties,setup['token'])
-    print response
+    #response = get_data_from_redcap(properties,setup['token'])
+
+    # parse the site catalog details to a dictionary
+    parse_site_details_and_send(site_catalog_file)
+    #print response
+
+def parse_site_details_and_send(site_catalog_file):
+    '''Function to parse the site details from site catalog'''
+    catalog_dict = {}
+    if not os.path.exists(site_catalog_file):
+        raise LogException("Error: site_catalog xml file not found at \
+            file not found at "+ site_catalog_file)
+    else:
+        catalog = open(site_catalog_file, 'r')
+    site_data = etree.parse(site_catalog_file)
+    site_num = len(site_data.findall(".//site"))
+    logger.info(str(site_num) + " total subject site entries read into tree.")
+    for site in site_data.iter('site'):
+        site_name = site.findtext('site_name')
+        site_uname = site.findtext('site_uname')
+        site_password = site.findtext('site_password')
+        site_remotepath = site.findtext('site_remotepath')
+        site_contact_email = site.findtext('site_contact_email')
+        send_file_to_uri(site_URI, uname, password, remotepath, localpath, contact_email)
+        print contact_email
+    catalog.close()
+    logger.info("site catalog XML file closed.")
+    pass
     
 def init_redcap_interface(setup):
     '''This function initializes the variables requrired to get data from redcap
@@ -161,28 +188,6 @@ def send_report(sender,receiver,body):
        print "Successfully sent email"
     except Exception:
         print "Error: unable to send email"
-
-def send_file_to_uri(site_URI, uname, password, remotepath, localpath):
-    '''This function puts the specified file to the given uri
-
-    '''
-    try:
-    	# make a connection with uri and credentials
-        s = sftp.Connection(host=site_URI, username=uname, password=password)
-        # put the file at the designated location in the server
-        s.put(localpath, remotepath)
-        # close the connection
-        s.close()
-
-    except Exception, e:
-    	# closing the connection incase there is any exception
-    	s.close()
-    	''' TODO
-    	Report should be sent to the concerned authority with the error
-    	message
-    	'''
-        print str(e)
-    pass
 
 class LogException(Exception):
     '''Class to log the exception
