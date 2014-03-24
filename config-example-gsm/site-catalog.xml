@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='US-ASCII'?>
+<sites_list>
+	<site>
+		<site_code>111</site_code>
+		<site_name>fake.ufl.edu</site_name>
+		<site_URI>sftp://user:password@host:port/path/to/file</site_URI>
+		<site_contact_email>temp@fake.ufl.edu</site_contact_email>
+	</site>
+	<site>
+		<site_code>222</site_code>
+		<site_name>fake.neb.edu</site_name>
+		<site_URI>sftp://user:password@host:port/path/to/file</site_URI>
+		<site_contact_email>temp@fake.neb.edu</site_contact_email>
+	</site>
+	<site>
+		<site_code>333</site_code>
+		<site_name>fake.lfu.edu</site_name>
+		<site_URI>sftp://user:password@host:port/path/to/file</site_URI>
+		<site_contact_email>temp@fake.lfu.edu</site_contact_email>
+	</site>
+</sites_list>
