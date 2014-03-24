@@ -13,24 +13,29 @@ __email__ = "mohan88@ufl.edu"
 __status__ = "Development"
 from lxml import etree
 import logging
+from lxml import etree
 import httplib
 from urllib import urlencode
 import os
-import pysftp as sftp
+import sys
 
 # This addresses the issues with relative paths
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
+sys.path.insert(0, proj_root+'bin/utils/')
+from sftp_transactions import sftp_transactions
 
 def main():
     # Configure logging
     configure_logging()
     
     setup_json = proj_root+'config/setup.json'
+    global setup
     setup = read_config(setup_json)
-    
+    site_catalog_file = proj_root+setup['site_catalog']
     # Initialize Redcap Interface
+
     properties = init_redcap_interface(setup)
     transform_xsl = setup['transform_xsl']
     response = get_data_from_redcap(properties,setup['token'])
@@ -50,6 +55,35 @@ def main():
 
 
     print xml_str2
+    parse_site_details_and_send(site_catalog_file)
+    #print response
+
+def parse_site_details_and_send(site_catalog_file):
+    '''Function to parse the site details from site catalog'''
+    catalog_dict = {}
+    if not os.path.exists(site_catalog_file):
+        raise LogException("Error: site_catalog xml file not found at \
+            file not found at "+ site_catalog_file)
+    else:
+        catalog = open(site_catalog_file, 'r')
+    site_data = etree.parse(site_catalog_file)
+    site_num = len(site_data.findall(".//site"))
+    logger.info(str(site_num) + " total subject site entries read into tree.")
+    sftp_instance = sftp_transactions()
+    for site in site_data.iter('site'):
+        site_URI = site.findtext('site_URI')
+        site_uname = site.findtext('site_uname')
+        site_password = site.findtext('site_password')
+        site_remotepath = site.findtext('site_remotepath')
+        site_contact_email = site.findtext('site_contact_email')
+        '''TODO:
+        currently sending a readme doc for testing purposes. replace it with the correct xml file.
+        '''
+        site_localpath = proj_root+'doc/README_DOC'
+        sftp_instance.send_file_to_uri(site_URI, site_uname, site_password, site_remotepath, site_localpath, site_contact_email)
+    catalog.close()
+    logger.info("site catalog XML file closed.")
+    pass
 
     
 def init_redcap_interface(setup):
@@ -162,8 +196,8 @@ def send_report(sender,receiver,body):
     from email.MIMEText import MIMEText
     msg = MIMEMultipart()
     msg['From'] = sender
-    msg['To'] = ",".join(receiver)
-    msg['Subject'] = "Data Import Report"
+    msg['To'] = receiver
+    msg['Subject'] = "Email from Research Subject Mapper"
     msg.attach(MIMEText(body, 'html'))
     
     """
@@ -178,28 +212,6 @@ def send_report(sender,receiver,body):
     except Exception:
         print "Error: unable to send email"
 
-def send_file_to_uri(site_URI, uname, password, remotepath, localpath):
-    '''This function puts the specified file to the given uri
-
-    '''
-    try:
-    	# make a connection with uri and credentials
-        s = sftp.Connection(host=site_URI, username=uname, password=password)
-        # put the file at the designated location in the server
-        s.put(localpath, remotepath)
-        # close the connection
-        s.close()
-
-    except Exception, e:
-    	# closing the connection incase there is any exception
-    	s.close()
-    	''' TODO
-    	Report should be sent to the concerned authority with the error
-    	message
-    	'''
-        print str(e)
-    pass
-
 class LogException(Exception):
     '''Class to log the exception
         logs the exception at an error level
@@ -211,7 +223,6 @@ class LogException(Exception):
     def __str__(self):
         logger.error(self.val)
         return repr(self.val)
-
 
 def configure_logging():
     '''Function to configure logging.
