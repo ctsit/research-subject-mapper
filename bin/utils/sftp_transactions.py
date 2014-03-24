@@ -1,12 +1,22 @@
+import pysftp as sftp
+import sys
+import os
+# This addresses the issues with relative paths
+file_dir = os.path.dirname(os.path.realpath(__file__))
+goal_dir = os.path.join(file_dir, "../")
+proj_root = os.path.abspath(goal_dir)+'/'
+sys.path.insert(0, proj_root+'bin')
+
+
 class sftp_transactions:
     """A class for handling the sftp transactions. This class contains
     functions for getting a file from sftp server and putting a file
     to a sftp server"""
 
     def __init__(self):
-        super(sftp_transactions, self).__init__()
+        self.data = []
         
-    def send_file_to_uri(site_URI, uname, password, remotepath, localpath, contact_email):
+    def send_file_to_uri(self, site_URI, uname, password, remotepath, localpath, contact_email):
         '''This function puts the specified file to the given uri.
         Authentication is done using the uname and password
         remotepath - the path where the file needs to be put
@@ -15,20 +25,22 @@ class sftp_transactions:
         transaction
         
         '''
-        try:
-        	# make a connection with uri and credentials
-            s = sftp.Connection(host=site_URI, username=uname, password=password)
-            # put the file at the designated location in the server
-            s.put(localpath, remotepath)
-            # close the connection
-            s.close()
+        # make a connection with uri and credentials
+        connect = sftp.Connection(host=site_URI, username=uname, password=password)
 
+        # import here to eliminate circular dependancy
+        import generate_subject_map_input
+        try:
+            # put the file at the designated location in the server
+            connect.put(localpath, remotepath)
+            # close the connection
+            connect.close()
         except Exception, e:
-        	# closing the connection incase there is any exception
-        	s.close()
-        	''' TODO
-        	Report should be sent to the concerned authority with the error
-        	message
-        	'''
+            # closing the connection incase there is any exception
+            connect.close()
+            '''Report should be sent to the concerned authority with the error
+                message
+            '''
+            generate_subject_map_input.send_report('please-do-not-reply@ufl.edu', contact_email, 'cannot make connection to sftp')
             print str(e)
-        pass
+    pass
