@@ -1,5 +1,6 @@
 class email_transactions():
-    """docstring for email_transactions"""
+    """docstring for email_transactions
+    This class deals with the email transactions as a shared library"""
     def __init__(self):
         self.data = []
 
