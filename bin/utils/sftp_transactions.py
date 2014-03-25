@@ -41,6 +41,35 @@ class sftp_transactions:
             '''Report should be sent to the concerned authority with the error
                 message
             '''
-            generate_subject_map_input.send_report('please-do-not-reply@ufl.edu', contact_email, 'cannot make connection to sftp')
+            generate_subject_map_input.send_report('please-do-not-reply@ufl.edu', contact_email, str(e))
+            print str(e)
+    pass
+
+    def get_file_from_uri(self, site_URI, uname, password, remotepath, localpath, contact_email):
+        '''This function gets the specified file to the given uri.
+        Authentication is done using the uname and password
+        remotepath - the path where the file needs to be put
+        localpath - the path where the file is picked from
+        contact_email - the email of the concerned authority to mail to incase of failed
+        transaction
+        
+        '''
+        # make a connection with uri and credentials
+        connect = sftp.Connection(host=site_URI, username=uname, password=password)
+
+        # import here to eliminate circular dependancy
+        import generate_subject_map_input
+        try:
+            # get the file from the designated location in the server
+            connect.get(remotepath, localpath)
+            # close the connection
+            connect.close()
+        except Exception, e:
+            # closing the connection incase there is any exception
+            connect.close()
+            '''Report should be sent to the concerned authority with the error
+                message
+            '''
+            generate_subject_map_input.send_report('please-do-not-reply@ufl.edu', contact_email, str(e))
             print str(e)
     pass
