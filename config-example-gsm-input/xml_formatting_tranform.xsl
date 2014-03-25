@@ -4,12 +4,7 @@
                 <xsl:import href="date.date.template.xsl" />
                 
     <xsl:output method="xml" version="4.0" encoding="UTF-8" indent="yes" />
-    <!-- <xsl:template match="/records">
-        <xsl:value-of select="/records"/>
-    </xsl:template> -->
-
-
-     <xsl:template match=" @* | node()">
+    <xsl:template match=" @* | node()">
          <xsl:copy>
                <xsl:apply-templates select="@* | node()" />
          </xsl:copy>
@@ -21,16 +16,14 @@
         <site_id>
             <xsl:value-of select="substring-before(.,'-')" />
         </site_id>
-       <!-- <xsl:value-of select="substring-before(.,'-')" /> -->
     </xsl:template>
-    <!-- <xsl:template match="site_id[. = '']">
-        <site_id>100</site_id>
-    </xsl:template> -->
+    
      <xsl:template match="dm_rfstdtc">
 	   <start_date>
-        <xsl:apply-templates select="@* | node()" />
+        <xsl:value-of select="." />
 	   </start_date>
 	</xsl:template>
+    
     <xsl:variable name="dateNow" select="date:date()"/>
     <xsl:template match="eot_dsstdtc[. = '']">
         <enddate>
@@ -39,15 +32,14 @@
     </xsl:template>
 	<xsl:template match="eot_dsstdtc">
 	   <enddate>
-        <xsl:apply-templates select="@* | node()" />
+        <xsl:value-of select="." />
 	   </enddate>
 	</xsl:template>
     
 
-     <xsl:template match=
+    <xsl:template match=
     "*[not(@*|*|comment()|processing-instruction()) 
-     and normalize-space()=''
-      ]"/>
+     and normalize-space()='']"/>
 
        
 
