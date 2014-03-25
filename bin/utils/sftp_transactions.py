@@ -41,6 +41,8 @@ class sftp_transactions:
             '''Report should be sent to the concerned authority with the error
                 message
             '''
+            print 'Error sending file to '+site_URI
+            print 'Check the credentials/remotepath/localpath/Server URI'
             generate_subject_map_input.send_report('please-do-not-reply@ufl.edu', contact_email, str(e))
             print str(e)
     pass

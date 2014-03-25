@@ -80,6 +80,10 @@ def parse_site_details_and_send(site_catalog_file):
         currently sending a readme doc for testing purposes. replace it with the correct xml file.
         '''
         site_localpath = proj_root+'doc/README_DOC'
+        print 'Sending '+site_localpath+' to '+site_URI+':'+site_remotepath
+        logger.info('Sending %s to %s:%s', site_localpath, site_URI, site_remotepath)
+        print 'Any error will be reported to '+site_contact_email
+        logger.info('Any error will be reported to %s',site_contact_email)
         sftp_instance.send_file_to_uri(site_URI, site_uname, site_password, site_remotepath, site_localpath, site_contact_email)
     catalog.close()
     logger.info("site catalog XML file closed.")
