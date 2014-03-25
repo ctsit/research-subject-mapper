@@ -1,6 +1,7 @@
 import pysftp as sftp
 import sys
 import os
+from email_transactions import email_transactions
 # This addresses the issues with relative paths
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
@@ -29,7 +30,7 @@ class sftp_transactions:
         connect = sftp.Connection(host=site_URI, username=uname, password=password)
 
         # import here to eliminate circular dependancy
-        import generate_subject_map_input
+        
         try:
             # put the file at the designated location in the server
             connect.put(localpath, remotepath)
@@ -43,7 +44,7 @@ class sftp_transactions:
             '''
             print 'Error sending file to '+site_URI
             print 'Check the credentials/remotepath/localpath/Server URI'
-            generate_subject_map_input.send_report('please-do-not-reply@ufl.edu', contact_email, str(e))
+            email_transactions().send_report('please-do-not-reply@ufl.edu', contact_email, str(e))
             print str(e)
     pass
 
