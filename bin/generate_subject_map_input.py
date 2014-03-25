@@ -33,7 +33,7 @@ def main():
     setup_json = proj_root+'config/setup.json'
     global setup
     setup = read_config(setup_json)
-    site_catalog_file = proj_root+setup['site_catalog']
+    site_catalog_file = proj_root+setup['site_catalog_file']
     # Initialize Redcap Interface
 
     properties = init_redcap_interface(setup)
