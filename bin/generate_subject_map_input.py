@@ -194,32 +194,6 @@ def read_config(setup_json):
                         + setup_json + " does not exist")
     return setup
     
-def send_report(sender,receiver,body):
-    '''
-    Function to email the report of the get_data_from_redcap to site contact.
-    mohan
-    '''
-    import smtplib
-    from email.MIMEMultipart import MIMEMultipart
-    from email.MIMEText import MIMEText
-    msg = MIMEMultipart()
-    msg['From'] = sender
-    msg['To'] = receiver
-    msg['Subject'] = "Email from Research Subject Mapper"
-    msg.attach(MIMEText(body, 'html'))
-    
-    """
-    Sending email
-
-    """
-    
-    try:
-       smtpObj = smtplib.SMTP('smtp.ufl.edu',25)
-       smtpObj.sendmail(sender, receiver, msg.as_string())
-       print "Successfully sent email"
-    except Exception:
-        print "Error: unable to send email"
-
 class LogException(Exception):
     '''Class to log the exception
         logs the exception at an error level
