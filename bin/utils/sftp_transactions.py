@@ -68,8 +68,6 @@ class sftp_transactions:
         # make a connection with uri and credentials
         connect = sftp.Connection(host=site_URI, username=uname, password=password)
 
-        # import here to eliminate circular dependancy
-        import generate_subject_map_input
         try:
             # get the file from the designated location in the server
             connect.get(remotepath, localpath)
@@ -81,6 +79,6 @@ class sftp_transactions:
             '''Report should be sent to the concerned authority with the error
                 message
             '''
-            generate_subject_map_input.send_report('please-do-not-reply@ufl.edu', contact_email, str(e))
+            email_transactions().send_mail('please-do-not-reply@ufl.edu', contact_email, str(e))
             print str(e)
     pass
