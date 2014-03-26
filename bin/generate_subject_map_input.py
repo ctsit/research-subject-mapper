@@ -27,11 +27,14 @@ proj_root = os.path.abspath(goal_dir)+'/'
 sys.path.insert(0, proj_root+'bin/utils/')
 from sftp_transactions import sftp_transactions
 from redcap_transactions import redcap_transactions
+from GSMLogger import GSMLogger
 
 def main():
     
     # Configure logging
-    configure_logging()
+    global gsmlogger
+    gsmlogger = GSMLogger()
+    gsmlogger.configure_logging()
     
     setup_json = proj_root+'config/setup.json'
     global setup
@@ -39,20 +42,20 @@ def main():
     site_catalog_file = proj_root+setup['site_catalog_file']
     # Initialize Redcap Interface
 
-    properties = redcap_transactions().init_redcap_interface(setup,setup['redcap_uri'], logger)
+    properties = redcap_transactions().init_redcap_interface(setup,setup['redcap_uri'], gsmlogger.logger)
     transform_xsl = setup['xml_formatting_tranform_xsl']
-    response = redcap_transactions().get_data_from_redcap(properties,setup['token'], logger,'RedCap')
+    response = redcap_transactions().get_data_from_redcap(properties,setup['token'], gsmlogger.logger,'RedCap')
     
     #XSL Transformation 1: This transformation removes junk data, rename elements and extracts site_id and adds new tag site_id
     xml_tree = etree.fromstring(response)
-    xslt = etree.parse(transform_xsl)
+    xslt = etree.parse(proj_root+transform_xsl)
     transform = etree.XSLT(xslt)
     xml_transformed = transform(xml_tree)
     xml_str = etree.tostring(xml_transformed, method='xml', pretty_print=True)
     
     #XSL Transformation 2: This transformation groups the data based on site_id
     transform2_xsl = setup['groupby_siteid_transform_xsl']
-    xslt = etree.parse(transform2_xsl)
+    xslt = etree.parse(proj_root+transform2_xsl)
     transform = etree.XSLT(xslt)
     xml_transformed2 = transform(xml_transformed)
     
@@ -72,7 +75,7 @@ def write_element_tree_to_file(element_tree, file_name):
         Radha
 
     '''
-    logger.debug('Writing ElementTree to %s', file_name)
+    gsmlogger.logger.debug('Writing ElementTree to %s', file_name)
     element_tree.write(file_name, encoding="us-ascii", xml_declaration=True,
             method="xml")
 
@@ -80,16 +83,16 @@ def parse_site_details_and_send(site_catalog_file, smi_filenames):
     '''Function to parse the site details from site catalog'''
     catalog_dict = {}
     for smi_file_no in smi_filenames:
-        if not os.path.exists('smi'+smi_file_no+'.xml'):
-            raise LogException("Error: smi file "+smi_file+" file not found")
+        if not os.path.exists(proj_root+'smi'+smi_file_no+'.xml'):
+            raise GSMLogger().LogException("Error: smi file "+smi_file+" file not found")
     if not os.path.exists(site_catalog_file):
-        raise LogException("Error: site_catalog xml file not found at \
+        raise GSMLogger().LogException("Error: site_catalog xml file not found at \
             file not found at "+ site_catalog_file)
     else:
         catalog = open(site_catalog_file, 'r')
     site_data = etree.parse(site_catalog_file)
     site_num = len(site_data.findall(".//site"))
-    logger.info(str(site_num) + " total subject site entries read into tree.")
+    gsmlogger.logger.info(str(site_num) + " total subject site entries read into tree.")
     sftp_instance = sftp_transactions()
     for site in site_data.iter('site'):
         site_code = site.findtext('site_code')
@@ -106,12 +109,12 @@ def parse_site_details_and_send(site_catalog_file, smi_filenames):
             site_remotepath = site.findtext('site_remotepath')
             site_localpath = proj_root+file_name
             print 'Sending '+site_localpath+' to '+site_URI+':'+site_remotepath
-            logger.info('Sending %s to %s:%s', site_localpath, site_URI, site_remotepath)
+            gsmlogger.logger.info('Sending %s to %s:%s', site_localpath, site_URI, site_remotepath)
             print 'Any error will be reported to '+site_contact_email
-            logger.info('Any error will be reported to %s',site_contact_email)
+            gsmlogger.logger.info('Any error will be reported to %s',site_contact_email)
             sftp_instance.send_file_to_uri(site_URI, site_uname, site_password, site_remotepath, site_localpath, site_contact_email)
     catalog.close()
-    logger.info("site catalog XML file closed.")
+    gsmlogger.logger.info("site catalog XML file closed.")
     pass
 
         
@@ -137,7 +140,7 @@ def read_config(setup_json):
                     'system_log_file', 'redcap_uri', 'token']
     for parameter in required_parameters:
         if not parameter in setup:
-            raise LogException("read_config: required parameter, '"
+            raise GSMLogger().LogException("read_config: required parameter, '"
             + parameter  + "', is not set in " + setup_json)
 
     # test for required files but only for the parameters that are set
@@ -145,53 +148,11 @@ def read_config(setup_json):
     for item in files:
         if item in setup:
             if not os.path.exists(proj_root + setup[item]):
-                raise LogException("read_config: " + item + " file, '"
+                raise GSMLogger().LogException("read_config: " + item + " file, '"
                         + setup[item] + "', specified in "
                         + setup_json + " does not exist")
     return setup
     
-class LogException(Exception):
-    '''Class to log the exception
-        logs the exception at an error level
-
-    '''
-    def __init__(self, *val):
-        self.val = val
-
-    def __str__(self):
-        logger.error(self.val)
-        return repr(self.val)
-
-def configure_logging():
-    '''Function to configure logging.
-
-        The log levels are defined below. Currently the log level is
-        set to DEBUG. All the logs in this level and above this level
-        are displayed. Depending on the maturity of the application
-        and release version these levels will be further
-        narrowed down to WARNING
-        
-
-        Level       Numeric value
-        =========================
-        CRITICAL        50
-        ERROR           40
-        WARNING         30
-        INFO            20
-        DEBUG           10
-        NOTSET          0
-
-    '''
-    # create logger
-    global logger
-    logger = logging.getLogger('research_subject_mapper')
-    # configuring logger file and log format
-    # setting default log level to Debug
-    logging.basicConfig(filename=proj_root+'log/rsm.log',
-                        format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
-                        datefmt='%m/%d/%Y %H:%M:%S',
-                        filemode='w',
-                        level=logging.DEBUG)
 
 if __name__ == "__main__":
     main()
