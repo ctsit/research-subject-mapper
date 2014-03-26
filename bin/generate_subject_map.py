@@ -42,11 +42,51 @@ def main():
     site_catalog_file = proj_root+setup['site_catalog_file']
     # Initialize Redcap Interface
 
-    properties = redcap_transactions().init_redcap_interface(setup,setup['person_index_uri'], gsmlogger.logger)
-    transform_xsl = setup['xml_formatting_tranform_xsl']
-    response = redcap_transactions().get_data_from_redcap(properties,setup['token'], gsmlogger.logger,'Person_Index')
-    
-    
+    #properties = redcap_transactions().init_redcap_interface(setup,setup['person_index_uri'], gsmlogger.logger)
+    #transform_xsl = setup['xml_formatting_tranform_xsl']
+    #response = redcap_transactions().get_data_from_redcap(properties,setup['token'], gsmlogger.logger,'Person_Index')
+
+    # retrieve smi.xml from the sftp server
+    get_smi_and_parse(site_catalog_file)
+ 
+def get_smi_and_parse(site_catalog_file):
+    '''Function to get the smi files from sftp server
+    The smi files are picked up according to the details in the site-catalog.xml
+    '''
+    if not os.path.exists(site_catalog_file):
+        raise GSMLogger().LogException("Error: site_catalog xml file not found at \
+            file not found at "+ site_catalog_file)
+    else:
+        catalog = open(site_catalog_file, 'r')
+    site_data = etree.parse(site_catalog_file)
+    site_num = len(site_data.findall(".//site"))
+    gsmlogger.logger.info(str(site_num) + " total subject site entries read into tree.")
+    sftp_instance = sftp_transactions()
+    '''The reference site code is the current site on which generate_subject_map.py is running
+    As we need to get the only smi from the sftp to this site.
+    '''
+    reference_site_code = setup['current_site_code']
+    for site in site_data.iter('site'):
+        site_code = site.findtext('site_code')
+        if reference_site_code == site_code:
+            site_URI = site.findtext('site_URI')
+            site_uname = site.findtext('site_uname')
+            site_password = site.findtext('site_password')
+            site_contact_email = site.findtext('site_contact_email')
+            '''Pick up the smi file from the server and place it in the proj_root
+            
+            '''
+            file_name = 'smi.xml'
+            site_remotepath = site.findtext('site_remotepath')+file_name
+            site_localpath = proj_root+file_name
+            print 'Retrieving '+site_remotepath+' from '+site_URI
+            gsmlogger.logger.info('Retrieving %s from %s', site_remotepath, site_URI)
+            print 'Any error will be reported to '+site_contact_email
+            gsmlogger.logger.info('Any error will be reported to %s',site_contact_email)
+            sftp_instance.get_file_from_uri(site_URI, site_uname, site_password, site_remotepath, site_localpath, site_contact_email)
+    catalog.close()
+    gsmlogger.logger.info("site catalog XML file closed.")
+    pass   
     
 def write_element_tree_to_file(element_tree, file_name):
     '''function to write ElementTree to a file
