@@ -2,6 +2,7 @@
     "project_name": "research subject mapper",
         
     "redcap_server":"https://sample-redcapserver.university.edu",
+    "current_site_code":"123",
 
     "redcap_uri": "https://sample-redcapuri.org/sample-path/",
     "token": "TOKENTOKENTOKENTOKENTOKENTOKEN"
