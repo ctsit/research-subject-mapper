@@ -44,7 +44,7 @@ class sftp_transactions:
             '''
             print 'Error sending file to '+site_URI
             print 'Check the credentials/remotepath/localpath/Server URI'
-            email_transactions().send_report('please-do-not-reply@ufl.edu', contact_email, str(e))
+            email_transactions().send_mail('please-do-not-reply@ufl.edu', contact_email, str(e))
             print str(e)
     pass
 
