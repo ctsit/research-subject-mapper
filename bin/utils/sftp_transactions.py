@@ -2,6 +2,8 @@ import pysftp as sftp
 import sys
 import os
 from email_transactions import email_transactions
+import paramiko
+
 # This addresses the issues with relative paths
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
@@ -16,7 +18,7 @@ class sftp_transactions:
 
     def __init__(self):
         self.data = []
-        
+    
     def send_file_to_uri(self, site_URI, uname, password, remotepath, localpath, contact_email):
         '''This function puts the specified file to the given uri.
         Authentication is done using the uname and password
@@ -27,13 +29,19 @@ class sftp_transactions:
         
         '''
         # make a connection with uri and credentials
-        connect = sftp.Connection(host=site_URI, username=uname, password=password)
-
-        # import here to eliminate circular dependancy
+        bridge = paramiko.Transport((site_URI, 22))
+        bridge.connect(username = uname, password = password)
+        connect = paramiko.SFTPClient.from_transport(bridge)
         
+        # import here to eliminate circular dependancy
+        try:
+            connect.chdir(remotepath)
+        except IOError:
+            connect.mkdir(remotepath)
+            connect.chdir(remotepath)
         try:
             # put the file at the designated location in the server
-            connect.put(localpath, remotepath)
+            connect.put(localpath, remotepath+'smi.xml')
             # close the connection
             connect.close()
         except Exception, e:
