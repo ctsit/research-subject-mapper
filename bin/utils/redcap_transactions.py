@@ -67,7 +67,7 @@ class redcap_transactions:
         params['returnFormat'] = return_format
         if formtype == 'Person_Index':
             params['form'] = 'person_identifiers'
-            params['fields'] = 'study_subject_number,mrn,facility_code,dm_brthyr'
+            params['fields'] = 'study_subject_number,study_subject_number_verifier_value,mrn,facility_code'
         elif formtype == 'RedCap':
             params['fields'] = 'dm_usubjid,dm_rfstdtc,eot_dsstdtc,dm_brthyr'
         if properties['is_secure'] is True:

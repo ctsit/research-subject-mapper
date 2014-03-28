@@ -40,12 +40,12 @@ def main():
     global setup
     setup = read_config(setup_json)
     site_catalog_file = proj_root+setup['site_catalog_file']
+    
     # Initialize Redcap Interface
 
-    #properties = redcap_transactions().init_redcap_interface(setup,setup['person_index_uri'], gsmlogger.logger)
-    #transform_xsl = setup['xml_formatting_tranform_xsl']
-    #response = redcap_transactions().get_data_from_redcap(properties,setup['token'], gsmlogger.logger,'Person_Index')
-
+    properties = redcap_transactions().init_redcap_interface(setup,setup['person_index_uri'], gsmlogger.logger)
+    response = redcap_transactions().get_data_from_redcap(properties,setup['token'], gsmlogger.logger,'Person_Index')
+    print response
     # retrieve smi.xml from the sftp server
     get_smi_and_parse(site_catalog_file)
  
