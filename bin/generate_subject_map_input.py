@@ -39,7 +39,7 @@ def main():
     setup_json = proj_root+'config/setup.json'
     global setup
     setup = read_config(setup_json)
-    site_catalog_file = proj_root+setup['site_catalog_file']
+    site_catalog_file = proj_root+setup['site_catalog_gsmi']
     # Initialize Redcap Interface
 
     properties = redcap_transactions().init_redcap_interface(setup,setup['redcap_uri'], gsmlogger.logger)
@@ -136,7 +136,7 @@ def read_config(setup_json):
     json_data.close()
 
     # test for required parameters
-    required_parameters = ['source_data_schema_file', 'site_catalog_file',
+    required_parameters = ['source_data_schema_file', 'site_catalog_gsmi',
                     'system_log_file', 'redcap_uri', 'token']
     for parameter in required_parameters:
         if not parameter in setup:
@@ -144,7 +144,7 @@ def read_config(setup_json):
             + parameter  + "', is not set in " + setup_json)
 
     # test for required files but only for the parameters that are set
-    files = ['source_data_schema_file', 'site_catalog_file', 'system_log_file']
+    files = ['source_data_schema_file', 'site_catalog_gsmi', 'system_log_file']
     for item in files:
         if item in setup:
             if not os.path.exists(proj_root + setup[item]):

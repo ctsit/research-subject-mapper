@@ -39,7 +39,7 @@ def main():
     setup_json = proj_root+'config/setup.json'
     global setup
     setup = read_config(setup_json)
-    site_catalog_file = proj_root+setup['site_catalog_file']
+    site_catalog_file = proj_root+setup['site_catalog_gsm']
     
     # Initialize Redcap Interface
 
@@ -69,15 +69,15 @@ def get_smi_and_parse(site_catalog_file):
     for site in site_data.iter('site'):
         site_code = site.findtext('site_code')
         if reference_site_code == site_code:
-            site_URI = site.findtext('site_URI')
-            site_uname = site.findtext('site_uname')
-            site_password = site.findtext('site_password')
-            site_contact_email = site.findtext('site_contact_email')
+            site_URI = site.findtext('smi_URI')
+            site_uname = site.findtext('smi_uname')
+            site_password = site.findtext('smi_password')
+            site_contact_email = site.findtext('smi_contact_email')
             '''Pick up the smi file from the server and place it in the proj_root
             
             '''
             file_name = 'smi.xml'
-            site_remotepath = site.findtext('site_remotepath')+file_name
+            site_remotepath = site.findtext('smi_remotepath')+file_name
             site_localpath = proj_root+file_name
             print 'Retrieving '+site_remotepath+' from '+site_URI
             gsmlogger.logger.info('Retrieving %s from %s', site_remotepath, site_URI)
@@ -117,7 +117,7 @@ def read_config(setup_json):
     json_data.close()
 
     # test for required parameters
-    required_parameters = ['source_data_schema_file', 'site_catalog_file',
+    required_parameters = ['source_data_schema_file', 'site_catalog_gsm',
                     'system_log_file', 'redcap_uri', 'token']
     for parameter in required_parameters:
         if not parameter in setup:
@@ -125,7 +125,7 @@ def read_config(setup_json):
             + parameter  + "', is not set in " + setup_json)
 
     # test for required files but only for the parameters that are set
-    files = ['source_data_schema_file', 'site_catalog_file', 'system_log_file']
+    files = ['source_data_schema_file', 'site_catalog_gsm', 'system_log_file']
     for item in files:
         if item in setup:
             if not os.path.exists(proj_root + setup[item]):
