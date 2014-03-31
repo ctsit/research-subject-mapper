@@ -28,6 +28,7 @@ sys.path.insert(0, proj_root+'bin/utils/')
 from sftp_transactions import sftp_transactions
 from redcap_transactions import redcap_transactions
 from GSMLogger import GSMLogger
+from XMLCombiner import XMLCombiner
 
 def main():
     
@@ -44,10 +45,31 @@ def main():
     # Initialize Redcap Interface
 
     properties = redcap_transactions().init_redcap_interface(setup,setup['person_index_uri'], gsmlogger.logger)
-    response = redcap_transactions().get_data_from_redcap(properties,setup['token'], gsmlogger.logger,'Person_Index')
-    print response
-    # retrieve smi.xml from the sftp server
-    get_smi_and_parse(site_catalog_file)
+    response = redcap_transactions().get_data_from_redcap(properties,setup['gsm_token'], gsmlogger.logger,'Person_Index')
+    xml_tree = etree.fromstring(response)
+
+    #XSL Transformation 2: This transformation groups the data based on site_id
+    transform_xsl = setup['person_index_transforma_xsl']
+    xslt = etree.parse(proj_root+transform_xsl)
+    transform = etree.XSLT(xslt)
+    xml_transformed = transform(xml_tree)
+
+    print xml_transformed
+    # smi_tree = etree.parse(proj_root+"smi.xml")
+    # smi_root = smi_tree.getroot()
+
+    # # print xml_tree
+    # print smi_tree
+    # for element in smi_root.findall('item/dm_subjid'):
+    #     print element.text
+    
+    # for element in xml_tree:
+    #     for subelem in element:
+    #         print subelem.tag + subelem.text
+
+
+    # # retrieve smi.xml from the sftp server
+    # get_smi_and_parse(site_catalog_file)
  
 def get_smi_and_parse(site_catalog_file):
     '''Function to get the smi files from sftp server
@@ -118,7 +140,7 @@ def read_config(setup_json):
 
     # test for required parameters
     required_parameters = ['source_data_schema_file', 'site_catalog_file',
-                    'system_log_file', 'redcap_uri', 'token']
+                    'system_log_file', 'redcap_uri', 'gsm_token']
     for parameter in required_parameters:
         if not parameter in setup:
             raise GSMLogger().LogException("read_config: required parameter, '"
