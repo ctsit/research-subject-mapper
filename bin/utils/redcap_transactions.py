@@ -24,7 +24,7 @@ class redcap_transactions:
         host = ''
         path = ''
 
-        token = setup['token']
+        token = setup['gsmi_token']
         
         if redcap_uri is None:
             host = '127.0.0.1:8998'
