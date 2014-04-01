@@ -28,7 +28,6 @@ sys.path.insert(0, proj_root+'bin/utils/')
 from sftp_transactions import sftp_transactions
 from redcap_transactions import redcap_transactions
 from GSMLogger import GSMLogger
-from XMLMerger import XMLMerger
 
 def main():
     
@@ -200,8 +199,8 @@ def read_config(setup_json):
                     'system_log_file', 'redcap_uri', 'gsm_token']
     for parameter in required_parameters:
         if not parameter in setup:
-            raise GSMLogger().LogException("read_config: required parameter, '"
-            + parameter  + "', is not set in " + setup_json)
+            raise GSMLogger().LogException("read_config: required parameter, "
+                + parameter  + "', is not set in " + setup_json)
 
     # test for required files but only for the parameters that are set
     files = ['source_data_schema_file', 'site_catalog_gsm', 'system_log_file']
