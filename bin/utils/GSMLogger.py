@@ -44,7 +44,7 @@ class GSMLogger:
                             format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
                             datefmt='%m/%d/%Y %H:%M:%S',
                             filemode='w',
-                            level=logging.DEBUG)  
+                            level=logging.DEBUG)
     
     class LogException(Exception):
         '''Class to log the exception
@@ -54,6 +54,7 @@ class GSMLogger:
             self.val = val
 
         def __str__(self):
-            logger.error(self.val)
+            # print self.val
+            GSMLogger().logger.error(self.val)
             return repr(self.val)
 
