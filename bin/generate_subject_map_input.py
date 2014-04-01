@@ -143,7 +143,7 @@ def read_config(setup_json):
     json_data.close()
 
     # test for required parameters
-    required_parameters = ['source_data_schema_file', 'site_catalog_file',
+    required_parameters = ['source_data_schema_file', 'site_catalog_gsmi',
                     'system_log_file', 'redcap_uri', 'gsmi_token']
 
     for parameter in required_parameters:

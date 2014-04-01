@@ -15,7 +15,9 @@
 <!-- group the data by site_id -->
  <xsl:template match="item[generate-id()=generate-id(key('groups',site_id)[1])]">
   <site id="{site_id}">
+  	<records>
    <xsl:copy-of select="key('groups',site_id)"/>
+</records>
   </site>
  </xsl:template>
  

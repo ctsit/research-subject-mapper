@@ -28,7 +28,7 @@ sys.path.insert(0, proj_root+'bin/utils/')
 from sftp_transactions import sftp_transactions
 from redcap_transactions import redcap_transactions
 from GSMLogger import GSMLogger
-from XMLCombiner import XMLCombiner
+from XMLMerger import XMLMerger
 
 def main():
     
@@ -52,25 +52,82 @@ def main():
     transform_xsl = setup['person_index_transforma_xsl']
     xslt = etree.parse(proj_root+transform_xsl)
     transform = etree.XSLT(xslt)
-    xml_transformed = transform(xml_tree)
+    person_index_data = transform(xml_tree)
+    smi_path = proj_root+"smi.xml"
+    if not os.path.exists(smi_path):
+        raise GSMLogger().LogException("Error: smi.xml file not found at\
+             "+ proj_root)
+    else:
+        smi = open(smi_path, 'r')
+    smi_data = etree.parse(smi_path)
+    sort_element_tree(smi_data)
+    sort_element_tree(person_index_data)
 
-    print xml_transformed
-    # smi_tree = etree.parse(proj_root+"smi.xml")
-    # smi_root = smi_tree.getroot()
+    person_index_dict = {}
+    for item in person_index_data.iter('item'):
+         person_index_dict[item.findtext('tsn')]=[item.findtext('yob'),item.findtext('mrn'),item.findtext('facility_code')]
 
-    # # print xml_tree
-    # print smi_tree
-    # for element in smi_root.findall('item/dm_subjid'):
-    #     print element.text
+
+    subjectmap_root = etree.Element("records")
+    subjectmap_exceptions_root = etree.Element("records")
+    for item in smi_data.iter('item'):
+        if item.findtext('tsn') in person_index_dict.keys():
+            if(person_index_dict[item.findtext('tsn')][0]==item.findtext('yob')):
+                mrn = etree.SubElement(item, "mrn")
+                mrn.text = person_index_dict[item.findtext('tsn')][1]
+                facility_code = etree.SubElement(item, "facility_code")
+                facility_code.text = person_index_dict[item.findtext('tsn')][2]
+                subjectmap_root.append(item)
+            else:
+                subjectmap_exceptions_root.append(etree.Element("item"))
+                exception_item = subjectmap_exceptions_root[0]
+                tsn = etree.SubElement(exception_item, "tsn")
+                tsn.text = item.findtext('tsn')
+                pi_yob = etree.SubElement(exception_item, "Person_Index_YOB")
+                pi_yob.text = person_index_dict[item.findtext('tsn')][0]
+                hcvt_yob = etree.SubElement(exception_item, "HCVTarget_YOB")
+                hcvt_yob.text = item.findtext('yob')
+
+    transform_xsl = setup['xml2csv_xsl']
+    xslt = etree.parse(proj_root+transform_xsl)
+    transform = etree.XSLT(xslt)
+    subject_map_csv = open("subject_map.csv", "w")
+    subject_map_csv.write("%s"%transform(subjectmap_root))
+    subject_map_csv.close()
+    subject_map_exception_csv = open("subject_map_exceptions.csv", "w")
+    subject_map_exception_csv.write("%s"%transform(subjectmap_exceptions_root))
+    subject_map_exception_csv.close()
     
-    # for element in xml_tree:
-    #     for subelem in element:
-    #         print subelem.tag + subelem.text
-
-
-    # # retrieve smi.xml from the sftp server
+    # # # retrieve smi.xml from the sftp server
     # get_smi_and_parse(site_catalog_file)
  
+def sort_element_tree(data):
+    """Sort element tree based on three given indices.
+
+    Keyword argument: data
+    sorting is based on study_id, form name, then timestamp, ascending order
+
+    """
+
+    # this element holds the subjects that are being sorted
+    container = data.getroot()
+    container[:] = sorted(container, key=getkey)
+
+def getkey(elem):
+    """Helper function for sorting. Returns keys to sort on.
+
+    Keyword argument: elem
+    returns the corresponding tuple study_id, form_name, timestamp
+
+    Nicholas
+
+    """
+    tsn = elem.findtext("tsn")
+    yob = elem.findtext("yob")
+    return (tsn,yob)
+
+
+
 def get_smi_and_parse(site_catalog_file):
     '''Function to get the smi files from sftp server
     The smi files are picked up according to the details in the site-catalog.xml
@@ -139,7 +196,7 @@ def read_config(setup_json):
     json_data.close()
 
     # test for required parameters
-    required_parameters = ['source_data_schema_file', 'site_catalog_file',
+    required_parameters = ['source_data_schema_file', 'site_catalog_gsm',
                     'system_log_file', 'redcap_uri', 'gsm_token']
     for parameter in required_parameters:
         if not parameter in setup:
