@@ -48,7 +48,7 @@ def main():
     response = redcap_transactions().get_data_from_redcap(properties,setup['gsm_token'], gsmlogger.logger,'Person_Index')
     xml_tree = etree.fromstring(response)
 
-    #XSL Transformation 2: This transformation groups the data based on site_id
+    #XSL Transformation : transforms the person_index data
     transform_xsl = setup['person_index_transforma_xsl']
     xslt = etree.parse(proj_root+transform_xsl)
     transform = etree.XSLT(xslt)
@@ -62,16 +62,17 @@ def main():
              "+ proj_root)
     else:
         smi = open(smi_path, 'r')
+    #Below code merges the 2 xmls
     smi_data = etree.parse(smi_path)
+    #sorting both the xml files.
     sort_element_tree(smi_data)
     sort_element_tree(person_index_data)
-
+    #generating the person index dictionary
     person_index_dict = {}
     for item in person_index_data.iter('item'):
          person_index_dict[item.findtext('research_subject_id')] = \
          [item.findtext('yob'),item.findtext('mrn'),item.findtext('facility_code')]
-
-
+    #iterate through the smi data and generate a new merged xmls for subject_map and subject_map_exceptions
     subjectmap_root = etree.Element("subject_map_records")
     subjectmap_exceptions_root = etree.Element("subject_map_exception_records")
     for item in smi_data.iter('item'):
@@ -92,6 +93,7 @@ def main():
                 hcvt_yob = etree.SubElement(exception_item, "HCVTarget_YOB")
                 hcvt_yob.text = item.findtext('yob')
 
+    #Below code transforms the xml files to csv files
     transform_xsl = setup['xml2csv_xsl']
     xslt = etree.parse(proj_root+transform_xsl)
     transform = etree.XSLT(xslt)

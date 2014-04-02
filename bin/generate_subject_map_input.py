@@ -74,6 +74,7 @@ def main():
         d=datetime.datetime.strptime(k.text, "%Y-%m-%d").date()-timedelta(days=180)
         k.text = str(d)
     smi_filenames = []
+    #modfying xml to change start date
     for k in tree:
         write_element_tree_to_file(ET.ElementTree(k),proj_root+'smi'+k.attrib['id']+'.xml')
         smi_filenames.append(k.attrib['id'])
