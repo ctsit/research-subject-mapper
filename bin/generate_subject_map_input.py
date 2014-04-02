@@ -78,7 +78,10 @@ def main():
     for k in tree:
         write_element_tree_to_file(ET.ElementTree(k),proj_root+'smi'+k.attrib['id']+'.xml')
         smi_filenames.append(k.attrib['id'])
+<<<<<<< HEAD
     # print smi_filenames
+=======
+>>>>>>> 4601455b7305d9c14c0a81f745a646499ac4901e
     parse_site_details_and_send(site_catalog_file, smi_filenames)
 
 
