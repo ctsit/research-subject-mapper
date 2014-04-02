@@ -154,8 +154,13 @@ def parse_site_details_and_send(site_catalog_file, site_code, file_name, action)
               sftp_instance.send_file_to_uri(subjectmap_URI, subjectmap_uname, \
                   subjectmap_password, subjectmap_remotepath, file_name, file_path, subjectmap_contact_email)
             elif action == 'email':
+              '''Send the subject_map_exceptions.csv to the contact email address as
+              an attachment
+
+              '''
               print 'Sending '+file_path+' as email attachement to '+subjectmap_contact_email
               gsmlogger.logger.info('Sending %s as email attachement to %s', file_path, subjectmap_contact_email)
+              # TODO change the mail body as required
               mail_body = 'Hi, \n this mail contains attached exceptions.csv file.'
               email_transactions().send_mail(setup['sender_email'], subjectmap_contact_email, mail_body, [file_path])
             else:
@@ -225,7 +230,8 @@ def get_smi_and_parse(site_catalog_file):
             gsmlogger.logger.info('Retrieving %s from %s', site_remotepath, site_URI)
             print 'Any error will be reported to '+site_contact_email
             gsmlogger.logger.info('Any error will be reported to %s',site_contact_email)
-            sftp_instance.get_file_from_uri(site_URI, site_uname, site_password, site_remotepath, site_localpath, site_contact_email)
+            sftp_instance.get_file_from_uri(site_URI, site_uname, site_password, \
+                      site_remotepath, site_localpath, site_contact_email)
     catalog.close()
     gsmlogger.logger.info("site catalog XML file closed.")
     pass
