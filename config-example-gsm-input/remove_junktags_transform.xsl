@@ -14,6 +14,6 @@
        </yob>
     </xsl:template>
 <xsl:template match="site_id" />
-<xsl:template match="dm_usubjid" />
+<xsl:template match="dm_subjid" />
 
 </xsl:stylesheet>

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='US-ASCII'?>
 <sites_list>
 	<site>
-		<site_code>111</site_code>
+		<site_code>001</site_code>
 		<site_URI>fake.ufl.edu</site_URI>
 		<site_uname>test_name</site_uname>
 		<site_password>test_password</site_password>
