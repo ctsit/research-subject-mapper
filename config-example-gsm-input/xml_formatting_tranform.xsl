@@ -24,9 +24,9 @@
      
         <!-- copy subject id and add new siteid -->
      <xsl:template match="dm_subjid">
-        <tsn>
+        <research_subject_id>
             <xsl:value-of select="." />
-        </tsn>
+        </research_subject_id>
         <site_id>
             <xsl:value-of select="substring-before(.,'-')" />
         </site_id>
@@ -43,15 +43,15 @@
     <!-- set enddate to sysdate if enddate is not set -->
     <xsl:variable name="dateNow" select="date:date()"/>
     <xsl:template match="eot_dsstdtc[. = '']">
-        <enddate>
+        <end_date>
             <xsl:value-of select="substring-before($dateNow,'-04:00')" />
-        </enddate>
+        </end_date>
     </xsl:template>
     <!-- copy enddate if it is already set -->
     <xsl:template match="eot_dsstdtc">
-       <enddate>
+       <end_date>
         <xsl:value-of select="." />
-       </enddate>
+       </end_date>
     </xsl:template>
     
 

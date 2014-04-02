@@ -9,9 +9,9 @@
 </xsl:template>
  
      <xsl:template match="study_subject_number">
-       <tsn>
+       <research_subject_id>
         <xsl:value-of select="." />
-       </tsn>
+       </research_subject_id>
     </xsl:template>
     <xsl:template match="study_subject_number_verifier_value">
        <yob>

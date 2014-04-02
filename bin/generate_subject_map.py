@@ -64,26 +64,26 @@ def main():
 
     person_index_dict = {}
     for item in person_index_data.iter('item'):
-         person_index_dict[item.findtext('tsn')]=[item.findtext('yob'),item.findtext('mrn'),item.findtext('facility_code')]
+         person_index_dict[item.findtext('research_subject_id')]=[item.findtext('yob'),item.findtext('mrn'),item.findtext('facility_code')]
 
 
     subjectmap_root = etree.Element("records")
     subjectmap_exceptions_root = etree.Element("records")
     for item in smi_data.iter('item'):
-        if item.findtext('tsn') in person_index_dict.keys():
-            if(person_index_dict[item.findtext('tsn')][0]==item.findtext('yob')):
+        if item.findtext('research_subject_id') in person_index_dict.keys():
+            if(person_index_dict[item.findtext('research_subject_id')][0]==item.findtext('yob')):
                 mrn = etree.SubElement(item, "mrn")
-                mrn.text = person_index_dict[item.findtext('tsn')][1]
+                mrn.text = person_index_dict[item.findtext('research_subject_id')][1]
                 facility_code = etree.SubElement(item, "facility_code")
-                facility_code.text = person_index_dict[item.findtext('tsn')][2]
+                facility_code.text = person_index_dict[item.findtext('research_subject_id')][2]
                 subjectmap_root.append(item)
             else:
                 subjectmap_exceptions_root.append(etree.Element("item"))
                 exception_item = subjectmap_exceptions_root[0]
-                tsn = etree.SubElement(exception_item, "tsn")
-                tsn.text = item.findtext('tsn')
+                research_subject_id = etree.SubElement(exception_item, "research_subject_id")
+                research_subject_id.text = item.findtext('research_subject_id')
                 pi_yob = etree.SubElement(exception_item, "Person_Index_YOB")
-                pi_yob.text = person_index_dict[item.findtext('tsn')][0]
+                pi_yob.text = person_index_dict[item.findtext('research_subject_id')][0]
                 hcvt_yob = etree.SubElement(exception_item, "HCVTarget_YOB")
                 hcvt_yob.text = item.findtext('yob')
 
@@ -121,9 +121,9 @@ def getkey(elem):
     Nicholas
 
     """
-    tsn = elem.findtext("tsn")
+    research_subject_id = elem.findtext("research_subject_id")
     yob = elem.findtext("yob")
-    return (tsn,yob)
+    return (research_subject_id,yob)
 
 
 
