@@ -6,15 +6,22 @@
   <xsl:param name="quote" select="'&quot;'" />
   <xsl:param name="break" select="'&#xA;'" />
 
-  <xsl:template match="/">
+  <xsl:template match="/subject_map_records">
     
-    <xsl:if test="/records/item/mrn">
+    <!-- <xsl:if test="/records/item/mrn"-->
       <xsl:text>"research_subject_id,yob,end_date,start_date,mrn,facility_code" </xsl:text>
-    </xsl:if>
+    <!--/xsl:if>
     <xsl:if test="not(/records/item/mrn)">
-      <xsl:text>"research_subject_id,person_index_yob,redcap_yob" </xsl:text></xsl:if>
+      <xsl:text>"research_subject_id,person_index_yob,redcap_yob" </xsl:text></xsl:if> -->
     <xsl:value-of select="$break" />   
-    <xsl:apply-templates select="records/item" />
+    <xsl:apply-templates select="/subject_map_records/item" />
+  </xsl:template>
+
+  <xsl:template match="/subject_map_exception_records">
+    
+    <xsl:text>"research_subject_id,person_index_yob,redcap_yob" </xsl:text>
+    <xsl:value-of select="$break" />   
+    <xsl:apply-templates select="/subject_map_exception_records/item" />
   </xsl:template>
 
   <xsl:template match="item">

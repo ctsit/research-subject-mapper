@@ -52,6 +52,9 @@ def main():
     xslt = etree.parse(proj_root+transform_xsl)
     transform = etree.XSLT(xslt)
     person_index_data = transform(xml_tree)
+
+    # # # retrieve smi.xml from the sftp server
+    get_smi_and_parse(site_catalog_file)
     smi_path = proj_root+"smi.xml"
     if not os.path.exists(smi_path):
         raise GSMLogger().LogException("Error: smi.xml file not found at\
@@ -67,8 +70,8 @@ def main():
          person_index_dict[item.findtext('research_subject_id')]=[item.findtext('yob'),item.findtext('mrn'),item.findtext('facility_code')]
 
 
-    subjectmap_root = etree.Element("records")
-    subjectmap_exceptions_root = etree.Element("records")
+    subjectmap_root = etree.Element("subject_map_records")
+    subjectmap_exceptions_root = etree.Element("subject_map_exception_records")
     for item in smi_data.iter('item'):
         if item.findtext('research_subject_id') in person_index_dict.keys():
             if(person_index_dict[item.findtext('research_subject_id')][0]==item.findtext('yob')):
@@ -97,8 +100,6 @@ def main():
     subject_map_exception_csv.write("%s"%transform(subjectmap_exceptions_root))
     subject_map_exception_csv.close()
     
-    # # # retrieve smi.xml from the sftp server
-    # get_smi_and_parse(site_catalog_file)
  
 def sort_element_tree(data):
     """Sort element tree based on three given indices.
