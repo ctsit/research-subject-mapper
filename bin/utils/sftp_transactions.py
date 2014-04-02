@@ -18,21 +18,21 @@ class sftp_transactions:
 
     def __init__(self):
         self.data = []
-    
-    def send_file_to_uri(self, site_URI, uname, password, remotepath, localpath, contact_email):
+
+    def send_file_to_uri(self, site_URI, uname, password, remotepath, file_name, localpath, contact_email):
         '''This function puts the specified file to the given uri.
         Authentication is done using the uname and password
         remotepath - the path where the file needs to be put
         localpath - the path where the file is picked from
         contact_email - the email of the concerned authority to mail to incase of failed
         transaction
-        
+
         '''
         # make a connection with uri and credentials
         bridge = paramiko.Transport((site_URI, 22))
         bridge.connect(username = uname, password = password)
         connect = paramiko.SFTPClient.from_transport(bridge)
-        
+
         # import here to eliminate circular dependancy
         try:
             connect.chdir(remotepath)
@@ -41,7 +41,7 @@ class sftp_transactions:
             connect.chdir(remotepath)
         try:
             # put the file at the designated location in the server
-            connect.put(localpath, remotepath+'smi.xml')
+            connect.put(localpath, remotepath+file_name)
             # close the connection
             connect.close()
         except Exception, e:
@@ -63,7 +63,7 @@ class sftp_transactions:
         localpath - the path where the file is picked from
         contact_email - the email of the concerned authority to mail to incase of failed
         transaction
-        
+
         '''
         # make a connection with uri and credentials
         connect = sftp.Connection(host=site_URI, username=uname, password=password)
