@@ -1,7 +1,7 @@
 #/usr/bin/env python
 """
 
-generate_subject_map.py -  Tool to generate patient-to-research subject mapping files based on inputs from REDCap projects 
+generate_subject_map.py -  Tool to generate patient-to-research subject mapping files based on inputs from REDCap projects
 
 """
 # Version 0.1 2013-11-18
@@ -26,21 +26,22 @@ goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
 sys.path.insert(0, proj_root+'bin/utils/')
 from sftp_transactions import sftp_transactions
+from email_transactions import email_transactions
 from redcap_transactions import redcap_transactions
 from GSMLogger import GSMLogger
 
 def main():
-    
+
     # Configure logging
     global gsmlogger
     gsmlogger = GSMLogger()
     gsmlogger.configure_logging()
-    
+
     setup_json = proj_root+'config/setup.json'
     global setup
     setup = read_config(setup_json)
     site_catalog_file = proj_root+setup['site_catalog_gsm']
-    
+
     # Initialize Redcap Interface
 
     properties = redcap_transactions().init_redcap_interface(setup,setup['person_index_uri'], gsmlogger.logger)
@@ -67,7 +68,8 @@ def main():
 
     person_index_dict = {}
     for item in person_index_data.iter('item'):
-         person_index_dict[item.findtext('research_subject_id')]=[item.findtext('yob'),item.findtext('mrn'),item.findtext('facility_code')]
+         person_index_dict[item.findtext('research_subject_id')] = \
+         [item.findtext('yob'),item.findtext('mrn'),item.findtext('facility_code')]
 
 
     subjectmap_root = etree.Element("subject_map_records")
@@ -96,11 +98,70 @@ def main():
     subject_map_csv = open("subject_map.csv", "w")
     subject_map_csv.write("%s"%transform(subjectmap_root))
     subject_map_csv.close()
+    # remove the smi.xml from the folder
+    try:
+      os.remove(smi_path)
+    except OSError:
+      pass
+    # send the subject_map.csv to EMR team (sftp server)
+    parse_site_details_and_send(site_catalog_file, setup['current_site_code'], 'subject_map.csv', 'sftp')
+
     subject_map_exception_csv = open("subject_map_exceptions.csv", "w")
     subject_map_exception_csv.write("%s"%transform(subjectmap_exceptions_root))
     subject_map_exception_csv.close()
-    
- 
+    # send subject_map_exceptions.csv as email attachment
+    parse_site_details_and_send(site_catalog_file, setup['current_site_code'], 'subject_map_exceptions.csv', 'email')
+
+
+def parse_site_details_and_send(site_catalog_file, site_code, file_name, action):
+    '''Function to parse the site details from site catalog and send
+    the subject map csv to the sftp server'''
+    # local absolute path of the file to send
+    file_path = proj_root+file_name
+    if not os.path.exists(file_path):
+        raise GSMLogger().LogException("Error: subject map file "+file_path+" file not found")
+    if not os.path.exists(site_catalog_file):
+        raise GSMLogger().LogException("Error: site_catalog xml file not found at \
+            file not found at "+ site_catalog_file)
+    else:
+        catalog = open(site_catalog_file, 'r')
+    site_data = etree.parse(site_catalog_file)
+    site_num = len(site_data.findall(".//site"))
+    gsmlogger.logger.info(str(site_num) + " total subject site entries read into tree.")
+    sftp_instance = sftp_transactions()
+    for site in site_data.iter('site'):
+        site_catalog_code = site.findtext('site_code')
+        if site_code == site_catalog_code:
+            subjectmap_URI = site.findtext('subjectmap_URI')
+            subjectmap_uname = site.findtext('subjectmap_uname')
+            subjectmap_password = site.findtext('subjectmap_password')
+            subjectmap_contact_email = site.findtext('subjectmap_contact_email')
+            # is it a file transfer or attachment email?
+            if action == 'sftp':
+              '''Pick up the subject_map.csv and put it in the specified
+              sftp server's remote path
+
+              '''
+              # remote path to send the file to
+              subjectmap_remotepath = site.findtext('subjectmap_remotepath')
+              print 'Sending '+file_path+' to '+subjectmap_URI+':'+subjectmap_remotepath
+              gsmlogger.logger.info('Sending %s to %s:%s', file_path, subjectmap_URI, subjectmap_remotepath)
+              print 'Any error will be reported to '+subjectmap_contact_email
+              gsmlogger.logger.info('Any error will be reported to %s', subjectmap_contact_email)
+              # put the subject map csv file
+              sftp_instance.send_file_to_uri(subjectmap_URI, subjectmap_uname, \
+                  subjectmap_password, subjectmap_remotepath, file_name, file_path, subjectmap_contact_email)
+            elif action == 'email':
+              print 'Sending '+file_path+' as email attachement to '+subjectmap_contact_email
+              gsmlogger.logger.info('Sending %s as email attachement to %s', file_path, subjectmap_contact_email)
+              mail_body = 'Hi, \n this mail contains attached exceptions.csv file.'
+              email_transactions().send_mail(setup['sender_email'], subjectmap_contact_email, mail_body, [file_path])
+            else:
+              print 'Invalid option. either sftp/email should be used'
+              gsmlogger.logger.info('Invalid option. either sftp/email should be used')
+    catalog.close()
+    pass
+
 def sort_element_tree(data):
     """Sort element tree based on three given indices.
 
@@ -153,7 +214,7 @@ def get_smi_and_parse(site_catalog_file):
             site_password = site.findtext('smi_password')
             site_contact_email = site.findtext('smi_contact_email')
             '''Pick up the smi file from the server and place it in the proj_root
-            
+
             '''
             file_name = 'smi.xml'
             site_remotepath = site.findtext('smi_remotepath')+file_name
@@ -165,8 +226,8 @@ def get_smi_and_parse(site_catalog_file):
             sftp_instance.get_file_from_uri(site_URI, site_uname, site_password, site_remotepath, site_localpath, site_contact_email)
     catalog.close()
     gsmlogger.logger.info("site catalog XML file closed.")
-    pass   
-    
+    pass
+
 def write_element_tree_to_file(element_tree, file_name):
     '''function to write ElementTree to a file
         takes file_name as input
@@ -177,7 +238,7 @@ def write_element_tree_to_file(element_tree, file_name):
     element_tree.write(file_name, encoding="us-ascii", xml_declaration=True,
             method="xml")
 
-        
+
 def read_config(setup_json):
     """function to read the config data from setup.json
         Philip
@@ -212,7 +273,7 @@ def read_config(setup_json):
                         + setup[item] + "', specified in "
                         + setup_json + " does not exist")
     return setup
-    
+
 
 if __name__ == "__main__":
     main()
