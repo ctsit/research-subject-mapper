@@ -41,7 +41,6 @@ class redcap_transactions:
         source_data = etree.parse(source_data_schema_file)
 
         fields = ','.join(field.text for field in source_data.iter('field'))
-        print fields
         
         if redcap_uri is None:
             host = '127.0.0.1:8998'
