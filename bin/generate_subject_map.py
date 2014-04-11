@@ -1,7 +1,8 @@
 #/usr/bin/env python
 """
 
-generate_subject_map.py -  Tool to generate patient-to-research subject mapping files based on inputs from REDCap projects
+generate_subject_map.py -  Tool to generate patient-to-research
+subject mapping files based on inputs from REDCap projects
 
 """
 # Version 0.1 2013-11-18
@@ -44,8 +45,10 @@ def main():
 
     # Initialize Redcap Interface
 
-    properties = redcap_transactions().init_redcap_interface(setup,setup['person_index_uri'], gsmlogger.logger)
-    response = redcap_transactions().get_data_from_redcap(properties,setup['gsm_token'], gsmlogger.logger,'Person_Index')
+    properties = redcap_transactions().init_redcap_interface(setup,\
+                                setup['person_index_uri'], gsmlogger.logger)
+    response = redcap_transactions().get_data_from_redcap(properties,\
+                          setup['gsm_token'], gsmlogger.logger,'Person_Index')
     xml_tree = etree.fromstring(response)
 
     #XSL Transformation : transforms the person_index data
@@ -71,8 +74,10 @@ def main():
     person_index_dict = {}
     for item in person_index_data.iter('item'):
          person_index_dict[item.findtext('research_subject_id')] = \
-         [item.findtext('yob'),item.findtext('mrn'),item.findtext('facility_code')]
-    #iterate through the smi data and generate a new merged xmls for subject_map and subject_map_exceptions
+         [item.findtext('yob'),item.findtext('mrn'),\
+                                       item.findtext('facility_code')]
+    #iterate through the smi data and generate a
+    # new merged xmls for subject_map and subject_map_exceptions
     subjectmap_root = etree.Element("subject_map_records")
     subjectmap_exceptions_root = etree.Element("subject_map_exception_records")
     for item in smi_data.iter('item'):
@@ -103,6 +108,8 @@ def main():
     subject_map_csv.write("%s"%transform(subjectmap_root))
     subject_map_csv.close()
     # remove the smi.xml from the folder
+    # removing smi.xml is necessary as the XSLT transformation writes data to
+    # smi.xml
     try:
       os.remove(smi_path)
     except OSError:
@@ -119,7 +126,9 @@ def main():
 
 def parse_site_details_and_send(site_catalog_file, site_code, file_name, action):
     '''Function to parse the site details from site catalog and send
-    the subject map csv to the sftp server'''
+    the subject map csv to the sftp server
+
+    '''
     # local absolute path of the file to send
     file_path = proj_root+file_name
     if not os.path.exists(file_path):
@@ -148,23 +157,30 @@ def parse_site_details_and_send(site_catalog_file, site_code, file_name, action)
               '''
               # remote path to send the file to
               subjectmap_remotepath = site.findtext('subjectmap_remotepath')
-              print 'Sending '+file_path+' to '+subjectmap_URI+':'+subjectmap_remotepath
-              gsmlogger.logger.info('Sending %s to %s:%s', file_path, subjectmap_URI, subjectmap_remotepath)
+              print 'Sending '+file_path+' to '+subjectmap_URI+':'\
+                                                +subjectmap_remotepath
+              gsmlogger.logger.info('Sending %s to %s:%s', \
+                              file_path, subjectmap_URI, subjectmap_remotepath)
               print 'Any error will be reported to '+subjectmap_contact_email
-              gsmlogger.logger.info('Any error will be reported to %s', subjectmap_contact_email)
+              gsmlogger.logger.info('Any error will be reported to %s', \
+                                                      subjectmap_contact_email)
               # put the subject map csv file
               sftp_instance.send_file_to_uri(subjectmap_URI, subjectmap_uname, \
-                  subjectmap_password, subjectmap_remotepath, file_name, file_path, subjectmap_contact_email)
+                                  subjectmap_password, subjectmap_remotepath, \
+                                file_name, file_path, subjectmap_contact_email)
             elif action == 'email':
-              '''Send the subject_map_exceptions.csv to the contact email address as
-              an attachment
+              '''Send the subject_map_exceptions.csv to the contact
+                email address as an attachment
 
               '''
-              print 'Sending '+file_path+' as email attachement to '+subjectmap_contact_email
-              gsmlogger.logger.info('Sending %s as email attachement to %s', file_path, subjectmap_contact_email)
+              print 'Sending '+file_path+' as email attachement to '\
+                                                      +subjectmap_contact_email
+              gsmlogger.logger.info('Sending %s as email attachement to %s', \
+                                          file_path, subjectmap_contact_email)
               # TODO change the mail body as required
               mail_body = 'Hi, \n this mail contains attached exceptions.csv file.'
-              email_transactions().send_mail(setup['sender_email'], subjectmap_contact_email, mail_body, [file_path])
+              email_transactions().send_mail(setup['sender_email'], \
+                              subjectmap_contact_email, mail_body, [file_path])
             else:
               print 'Invalid option. either sftp/email should be used'
               gsmlogger.logger.info('Invalid option. either sftp/email should be used')
@@ -211,8 +227,10 @@ def get_smi_and_parse(site_catalog_file):
     site_num = len(site_data.findall(".//site"))
     gsmlogger.logger.info(str(site_num) + " total subject site entries read into tree.")
     sftp_instance = sftp_transactions()
-    '''The reference site code is the current site on which generate_subject_map.py is running
+    '''The reference site code is the current site on which
+    generate_subject_map.py is running.
     As we need to get the only smi from the sftp to this site.
+
     '''
     reference_site_code = setup['current_site_code']
     for site in site_data.iter('site'):
@@ -229,9 +247,11 @@ def get_smi_and_parse(site_catalog_file):
             site_remotepath = site.findtext('smi_remotepath')+file_name
             site_localpath = proj_root+file_name
             print 'Retrieving '+site_remotepath+' from '+site_URI
-            gsmlogger.logger.info('Retrieving %s from %s', site_remotepath, site_URI)
+            gsmlogger.logger.info('Retrieving %s from %s', \
+                                                    site_remotepath, site_URI)
             print 'Any error will be reported to '+site_contact_email
-            gsmlogger.logger.info('Any error will be reported to %s',site_contact_email)
+            gsmlogger.logger.info('Any error will be reported to %s', \
+                                                            site_contact_email)
             sftp_instance.get_file_from_uri(site_URI, site_uname, site_password, \
                       site_remotepath, site_localpath, site_contact_email)
     catalog.close()
