@@ -82,7 +82,9 @@ def main():
                 mrn.text = person_index_dict[item.findtext('research_subject_id')][1]
                 facility_code = etree.SubElement(item, "facility_code")
                 facility_code.text = person_index_dict[item.findtext('research_subject_id')][2]
+                item.remove(item.get('yob'))
                 subjectmap_root.append(item)
+
             else:
                 subjectmap_exceptions_root.append(etree.Element("item"))
                 exception_item = subjectmap_exceptions_root[0]
