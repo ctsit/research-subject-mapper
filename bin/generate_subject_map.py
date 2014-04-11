@@ -87,7 +87,7 @@ def main():
                 mrn.text = person_index_dict[item.findtext('research_subject_id')][1]
                 facility_code = etree.SubElement(item, "facility_code")
                 facility_code.text = person_index_dict[item.findtext('research_subject_id')][2]
-                item.remove(item.get('yob'))
+                item.remove(item.find('yob'))
                 subjectmap_root.append(item)
 
             else:
@@ -287,7 +287,7 @@ def read_config(setup_json):
     json_data.close()
 
     # test for required parameters
-    required_parameters = ['source_data_schema_file', 'site_catalog_gsm',
+    required_parameters = ['source_data_schema_file_gsm', 'site_catalog_gsm',
                     'system_log_file', 'redcap_uri', 'gsm_token']
     for parameter in required_parameters:
         if not parameter in setup:

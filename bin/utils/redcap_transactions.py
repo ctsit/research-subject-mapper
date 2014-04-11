@@ -3,9 +3,10 @@ import httplib
 from urllib import urlencode
 import os
 import sys
+from lxml import etree
 # This addresses the issues with relative paths
 file_dir = os.path.dirname(os.path.realpath(__file__))
-goal_dir = os.path.join(file_dir, "../")
+goal_dir = os.path.join(file_dir, "../../")
 proj_root = os.path.abspath(goal_dir)+'/'
 sys.path.insert(0, proj_root+'bin')
 
@@ -23,8 +24,24 @@ class redcap_transactions:
         logger.info('Initializing redcap interface')
         host = ''
         path = ''
+        source_data_schema_file = ''
+        if(setup['gsm']=='Y'):
+            token = setup['gsm_token']
+            source_data_schema_file = proj_root + setup['source_data_schema_file_gsm']
+        else:
+            token = setup['gsmi_token']
+            source_data_schema_file = proj_root + setup['source_data_schema_file_gsmi']
+        
+        if not os.path.exists(source_data_schema_file):
+            raise Exception("Error: source_data_schema.xml file not found at\
+             "+ source_data_schema_file)
+        else:
+            source = open(source_data_schema_file, 'r')
 
-        token = setup['gsmi_token']
+        source_data = etree.parse(source_data_schema_file)
+
+        fields = ','.join(field.text for field in source_data.iter('field'))
+        print fields
         
         if redcap_uri is None:
             host = '127.0.0.1:8998'
@@ -43,7 +60,7 @@ class redcap_transactions:
         host = after_httpstr_list[0]
         path = '/' + after_httpstr_list[1]
         properties = {'host' : host, 'path' : path, "is_secure" : is_secure,
-                                'token': token}
+                                'token': token, "fields" : fields}
         
         logger.info("redcap interface initialzed")
         return properties
@@ -65,11 +82,8 @@ class redcap_transactions:
         params['format'] = format_param
         params['type'] = type_param
         params['returnFormat'] = return_format
-        if formtype == 'Person_Index':
-            params['form'] = 'person_identifiers'
-            params['fields'] = 'study_subject_number,study_subject_number_verifier_value,mrn,facility_code'
-        elif formtype == 'RedCap':
-            params['fields'] = 'dm_usubjid,dm_rfstdtc,eot_dsstdtc,dm_brthyr'
+        params['fields'] = properties['token']
+        
         if properties['is_secure'] is True:
             redcap_connection = httplib.HTTPSConnection(properties['host'])
         else:

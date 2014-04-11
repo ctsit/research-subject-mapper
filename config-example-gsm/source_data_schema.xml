@@ -1,33 +1,11 @@
 <?xml version='1.0' encoding='US-ASCII'?>
-<sources_list>
-	<source>
-		<redcap_uri>https://www.redcap.org/sampleuri1</redcap_uri>
-		<apitoken>123456789123456789</apitoken>
-		<fields>
-			<dm_usubjid>123</dm_usubjid>
-			<dm_rfstdtc>2014-01-01</dm_rfstdtc>
-			<eot_dsstdtc>2014-01-05</eot_dsstdtc>
-			<dm_brthyr>1980</dm_brthyr>
-		</fields>
-	</source>
-	<source>
-		<redcap_uri>https://www.redcap.org/sampleuri2</redcap_uri>
-		<apitoken>123456789123456789</apitoken>
-		<fields>
-			<dm_usubjid>213</dm_usubjid>
-			<dm_rfstdtc>2013-01-01</dm_rfstdtc>
-			<eot_dsstdtc></eot_dsstdtc>
-			<dm_brthyr>1982</dm_brthyr>
-		</fields>
-	</source>
-	<source>
-		<redcap_uri>https://www.redcap.org/sampleuri3</redcap_uri>
-		<apitoken>123456789123456789</apitoken>
-		<fields>
-			<dm_usubjid>321</dm_usubjid>
-			<dm_rfstdtc>2013-01-01</dm_rfstdtc>
-			<eot_dsstdtc>2014-01-05</eot_dsstdtc>
-			<dm_brthyr>1988</dm_brthyr>
-		</fields>
-	</source>
-</sources_list>
+<source>
+	<redcap_uri>https://www.redcap-host.org/api</redcap_uri>
+	<apitoken>123456789123456789</apitoken>
+	<fields>
+		<field>study_subject_number</field>
+		<field>study_subject_number_verifier_value</field>
+		<field>mrn</field>
+		<field>facility_code</field>
+	</fields>
+</source>
