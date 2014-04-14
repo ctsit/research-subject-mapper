@@ -41,7 +41,6 @@ class redcap_transactions:
         source_data = etree.parse(source_data_schema_file)
 
         fields = ','.join(field.text for field in source_data.iter('field'))
-        
         if redcap_uri is None:
             host = '127.0.0.1:8998'
             path = '/redcap/api/'
@@ -81,7 +80,7 @@ class redcap_transactions:
         params['format'] = format_param
         params['type'] = type_param
         params['returnFormat'] = return_format
-        params['fields'] = properties['token']
+        params['fields'] = properties['fields']
         
         if properties['is_secure'] is True:
             redcap_connection = httplib.HTTPSConnection(properties['host'])

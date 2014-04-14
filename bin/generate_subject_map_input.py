@@ -47,7 +47,8 @@ def main():
     properties = redcap_transactions().init_redcap_interface(setup,setup['redcap_uri'], gsmlogger.logger)
     transform_xsl = setup['xml_formatting_tranform_xsl']
     response = redcap_transactions().get_data_from_redcap(properties,setup['gsmi_token'], gsmlogger.logger,'RedCap')
-    
+    print response
+
     #XSL Transformation 1: This transformation removes junk data, rename elements and extracts site_id and adds new tag site_id
     xml_tree = etree.fromstring(response)
     xslt = etree.parse(proj_root+transform_xsl)
@@ -131,7 +132,7 @@ def parse_site_details_and_send(site_catalog_file, smi_filenames):
             except OSError:
               pass
         else:
-            print 'Site code does not exist'
+            print 'Site code '+site_code+' does not exist'
             gsmlogger.logger.info('Site code does not exist')
     catalog.close()
     gsmlogger.logger.info("site catalog XML file closed.")
