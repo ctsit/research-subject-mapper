@@ -50,7 +50,7 @@ def main():
     response = redcap_transactions().get_data_from_redcap(properties,\
                           setup['gsm_token'], gsmlogger.logger,'Person_Index')
     xml_tree = etree.fromstring(response)
-
+    
     #XSL Transformation : transforms the person_index data
     transform_xsl = setup['person_index_transforma_xsl']
     xslt = etree.parse(proj_root+transform_xsl)
@@ -92,8 +92,7 @@ def main():
                 subjectmap_root.append(item)
 
             else:
-                subjectmap_exceptions_root.append(etree.Element("item"))
-                exception_item = subjectmap_exceptions_root[0]
+                exception_item = etree.Element("item")
                 research_subject_id = etree.SubElement(exception_item, "research_subject_id")
                 research_subject_id.text = item.findtext('research_subject_id')
                 if(research_subject_id.text is not None):
@@ -102,6 +101,7 @@ def main():
                 pi_yob.text = person_index_dict[item.findtext('research_subject_id')][0]
                 hcvt_yob = etree.SubElement(exception_item, "HCVTarget_YOB")
                 hcvt_yob.text = item.findtext('yob')
+                subjectmap_exceptions_root.append(exception_item)
 
     #Below code transforms the xml files to csv files
     transform_xsl = setup['xml2csv_xsl']
