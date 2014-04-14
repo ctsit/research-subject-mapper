@@ -15,7 +15,7 @@ class redcap_transactions:
     """A class for getting data from redcap instace"""
     def __init__(self):
         self.data = []
-        
+
     def init_redcap_interface(self,setup,redcap_uri,logger):
         '''This function initializes the variables requrired to get data from redcap
         interface. This reads the data from the setup.json and fills the dict
@@ -25,13 +25,9 @@ class redcap_transactions:
         host = ''
         path = ''
         source_data_schema_file = ''
-        if(setup['gsm']=='Y'):
-            token = setup['gsm_token']
-            source_data_schema_file = proj_root + setup['source_data_schema_file_gsm']
-        else:
-            token = setup['gsmi_token']
-            source_data_schema_file = proj_root + setup['source_data_schema_file_gsmi']
-        
+        token = setup['token']
+        source_data_schema_file = proj_root + setup['source_data_schema_file']
+
         if not os.path.exists(source_data_schema_file):
             raise Exception("Error: source_data_schema.xml file not found at\
              "+ source_data_schema_file)
@@ -58,7 +54,7 @@ class redcap_transactions:
         path = '/' + after_httpstr_list[1]
         properties = {'host' : host, 'path' : path, "is_secure" : is_secure,
                                 'token': token, "fields" : fields}
-        
+
         logger.info("redcap interface initialzed")
         return properties
 
@@ -80,7 +76,7 @@ class redcap_transactions:
         params['type'] = type_param
         params['returnFormat'] = return_format
         params['fields'] = properties['fields']
-        
+
         if properties['is_secure'] is True:
             redcap_connection = httplib.HTTPSConnection(properties['host'])
         else:
