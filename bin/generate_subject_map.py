@@ -80,6 +80,7 @@ def main():
     # new merged xmls for subject_map and subject_map_exceptions
     subjectmap_root = etree.Element("subject_map_records")
     subjectmap_exceptions_root = etree.Element("subject_map_exception_records")
+    exceptions = False
     for item in smi_data.iter('item'):
         if item.findtext('research_subject_id') in person_index_dict.keys():
             if(person_index_dict[item.findtext('research_subject_id')][0]==item.findtext('yob')):
@@ -95,6 +96,8 @@ def main():
                 exception_item = subjectmap_exceptions_root[0]
                 research_subject_id = etree.SubElement(exception_item, "research_subject_id")
                 research_subject_id.text = item.findtext('research_subject_id')
+                if(research_subject_id.text is not None):
+                    exceptions = True
                 pi_yob = etree.SubElement(exception_item, "Person_Index_YOB")
                 pi_yob.text = person_index_dict[item.findtext('research_subject_id')][0]
                 hcvt_yob = etree.SubElement(exception_item, "HCVTarget_YOB")
@@ -121,7 +124,8 @@ def main():
     subject_map_exception_csv.write("%s"%transform(subjectmap_exceptions_root))
     subject_map_exception_csv.close()
     # send subject_map_exceptions.csv as email attachment
-    parse_site_details_and_send(site_catalog_file, setup['current_site_code'], 'subject_map_exceptions.csv', 'email')
+    if(exceptions):
+        parse_site_details_and_send(site_catalog_file, setup['current_site_code'], 'subject_map_exceptions.csv', 'email')
 
 
 def parse_site_details_and_send(site_catalog_file, site_code, file_name, action):
