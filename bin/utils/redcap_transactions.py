@@ -16,7 +16,7 @@ class redcap_transactions:
     def __init__(self):
         self.data = []
 
-    def init_redcap_interface(self,setup,redcap_uri,logger):
+    def init_redcap_interface(self,setup,logger):
         '''This function initializes the variables requrired to get data from redcap
         interface. This reads the data from the setup.json and fills the dict
         with required properties.
@@ -25,7 +25,6 @@ class redcap_transactions:
         host = ''
         path = ''
         source_data_schema_file = ''
-        token = setup['token']
         source_data_schema_file = proj_root + setup['source_data_schema_file']
 
         if not os.path.exists(source_data_schema_file):
@@ -35,6 +34,8 @@ class redcap_transactions:
             source = open(source_data_schema_file, 'r')
 
         source_data = etree.parse(source_data_schema_file)
+        redcap_uri = source_data.find('redcap_uri').text
+        token = source_data.find('apitoken').text
         fields = ','.join(field.text for field in source_data.iter('field'))
         if redcap_uri is None:
             host = '127.0.0.1:8998'
@@ -58,7 +59,7 @@ class redcap_transactions:
         logger.info("redcap interface initialzed")
         return properties
 
-    def get_data_from_redcap(self, properties,token,logger,formtype, format_param='xml',
+    def get_data_from_redcap(self, properties,logger, format_param='xml',
             type_param='flat', return_format='xml'):
         '''This function gets data from redcap using POST method
         for getting person index data formtype='Person_Index' must be passed as argument
@@ -67,10 +68,7 @@ class redcap_transactions:
         '''
         logger.info('getting data from redcap')
         params = {}
-        if token != '':
-            params['token'] = token
-        else:
-            params['token'] = properties['token']
+        params['token'] = properties['token']
         params['content'] = 'record'
         params['format'] = format_param
         params['type'] = type_param

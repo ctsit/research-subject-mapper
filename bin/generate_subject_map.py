@@ -41,14 +41,14 @@ def main():
     setup_json = proj_root+'config/setup.json'
     global setup
     setup = read_config(setup_json)
-    site_catalog_file = proj_root+setup['site_catalog_gsm']
+    site_catalog_file = proj_root+setup['site_catalog']
 
     # Initialize Redcap Interface
 
     properties = redcap_transactions().init_redcap_interface(setup,\
-                                setup['person_index_uri'], gsmlogger.logger)
+                     gsmlogger.logger)
     response = redcap_transactions().get_data_from_redcap(properties,\
-                          setup['gsm_token'], gsmlogger.logger,'Person_Index')
+                 gsmlogger.logger)
     xml_tree = etree.fromstring(response)
     
     #XSL Transformation : transforms the person_index data
@@ -291,15 +291,15 @@ def read_config(setup_json):
     json_data.close()
 
     # test for required parameters
-    required_parameters = ['source_data_schema_file_gsm', 'site_catalog_gsm',
-                    'system_log_file', 'redcap_uri', 'gsm_token']
+    required_parameters = ['source_data_schema_file', 'site_catalog',
+                    'system_log_file']
     for parameter in required_parameters:
         if not parameter in setup:
             raise GSMLogger().LogException("read_config: required parameter, "
                 + parameter  + "', is not set in " + setup_json)
 
     # test for required files but only for the parameters that are set
-    files = ['source_data_schema_file', 'site_catalog_gsm', 'system_log_file']
+    files = ['source_data_schema_file', 'site_catalog', 'system_log_file']
     for item in files:
         if item in setup:
             if not os.path.exists(proj_root + setup[item]):
