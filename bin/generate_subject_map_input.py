@@ -45,11 +45,10 @@ def main():
     site_catalog_file = proj_root+setup['site_catalog']
     # Initialize Redcap Interface
 
-    properties = redcap_transactions().init_redcap_interface(setup,setup['redcap_uri'], gsmlogger.logger)
+    properties = redcap_transactions().init_redcap_interface(setup, gsmlogger.logger)
     transform_xsl = setup['xml_formatting_tranform_xsl']
-    response = redcap_transactions().get_data_from_redcap(properties,setup['token'], gsmlogger.logger,'RedCap')
-    print response
-
+    response = redcap_transactions().get_data_from_redcap(properties, gsmlogger.logger)
+    
     #XSL Transformation 1: This transformation removes junk data, rename elements and extracts site_id and adds new tag site_id
     xml_tree = etree.fromstring(response)
     xslt = etree.parse(proj_root+transform_xsl)
@@ -159,7 +158,7 @@ def read_config(setup_json):
 
     # test for required parameters
     required_parameters = ['source_data_schema_file', 'site_catalog',
-                    'system_log_file', 'redcap_uri', 'token']
+                    'system_log_file']
 
     for parameter in required_parameters:
         if not parameter in setup:
