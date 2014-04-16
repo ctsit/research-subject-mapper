@@ -47,6 +47,7 @@ def main():
 
     properties = redcap_transactions().init_redcap_interface(setup,\
                      gsmlogger.logger)
+    #gets data from the person index for the fields listed in the source_data_schema.xml
     response = redcap_transactions().get_data_from_redcap(properties,\
                  gsmlogger.logger)
     xml_tree = etree.fromstring(response)
@@ -77,7 +78,7 @@ def main():
          [item.findtext('yob'),item.findtext('mrn'),\
                                        item.findtext('facility_code')]
     #iterate through the smi data and generate a
-    # new merged xmls for subject_map and subject_map_exceptions
+    # new merged xml's for subject_map and subject_map_exceptions
     subjectmap_root = etree.Element("subject_map_records")
     subjectmap_exceptions_root = etree.Element("subject_map_exception_records")
     exceptions = False

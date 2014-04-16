@@ -47,6 +47,7 @@ def main():
 
     properties = redcap_transactions().init_redcap_interface(setup, gsmlogger.logger)
     transform_xsl = setup['xml_formatting_tranform_xsl']
+    #get data from the redcap for the fields listed in the source_data_schema.xml
     response = redcap_transactions().get_data_from_redcap(properties, gsmlogger.logger)
     
     #XSL Transformation 1: This transformation removes junk data, rename elements and extracts site_id and adds new tag site_id
@@ -75,7 +76,7 @@ def main():
         d=datetime.datetime.strptime(k.text, "%Y-%m-%d").date()-timedelta(days=180)
         k.text = str(d)
     smi_filenames = []
-    #modfying xml to change start date
+    #writing data to smi+site_id.xml. This xml will be saved to sftp of the site as smi.xml
     for k in tree:
         write_element_tree_to_file(ET.ElementTree(k),proj_root+'smi'+k.attrib['id']+'.xml')
         smi_filenames.append(k.attrib['id'])
