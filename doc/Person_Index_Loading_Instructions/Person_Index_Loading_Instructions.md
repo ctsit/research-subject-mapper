@@ -38,33 +38,14 @@ In REDCap User Rights, set "Data Entry Rights" to "Read Only" for the "UUID Form
 
 ![image alt text](image_6.png)
 
-## Add Health System Sites
 
-On 'Person Identifiers' form, revise 'Hospital Facility' field to use an accurate list of facility codes and names for your health care system.  Follow these screen shots for an example of how to make those changes.  
-
-In your REDCap project, open the Online Designer
-
-![image alt text](image_7.png)
-
-In the REDCap Online Designer, select the Person Identifiers form.
-
-![image alt text](image_8.png)
-
-Within the Person Identifiers form edit the Hospital Facility field
-
-![image alt text](image_9.png)
-
-Replace the list of choices with the names and facility codes relevant to your site.  Contact your EMR reporting team to get a list of codes that identify the different facilities within your Health System.
-
-![image alt text](image_10.png)
-
-**Create API Token**
+## Create API Token
 
 For the data in your site's Person Index to be used by programs, those programs will need access through REDCap's API interface.  You will need to create an API Token to allow those programs to authenticate and get the correct permissions on your Person Index.  
 
 This token can be created on any account, but for automated processes a *service account* will provide a more reliable authentication.  Add a user in this REDCap project with the permissions shown here 
 
-## ![image alt text](image_11.png)
+![image alt text](image_11.png)
 
 After you have created the new user, login as that user and request an Read-only API button on the left hand toolbar.  
 
