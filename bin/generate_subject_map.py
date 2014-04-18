@@ -59,11 +59,9 @@ def main():
     person_index_data = transform(xml_tree)
 
     # # # retrieve smi.xml from the sftp server
-    get_smi_and_parse(site_catalog_file)
-    smi_path = proj_root+"smi.xml"
+    smi_path = get_smi_and_parse(site_catalog_file)
     if not os.path.exists(smi_path):
-        raise GSMLogger().LogException("Error: smi.xml file not found at\
-             "+ proj_root)
+        raise GSMLogger().LogException("Error: file " + smi_path+ " not found")
     else:
         smi = open(smi_path, 'r')
     #Below code merges the 2 xmls
@@ -119,17 +117,17 @@ def main():
     except OSError:
       pass
     # send the subject_map.csv to EMR team (sftp server)
-    parse_site_details_and_send(site_catalog_file, setup['current_site_code'], 'subject_map.csv', 'sftp')
+    parse_site_details_and_send(site_catalog_file, 'subject_map.csv', 'sftp')
 
     subject_map_exception_csv = open("subject_map_exceptions.csv", "w")
     subject_map_exception_csv.write("%s"%transform(subjectmap_exceptions_root))
     subject_map_exception_csv.close()
     # send subject_map_exceptions.csv as email attachment
     if(exceptions):
-        parse_site_details_and_send(site_catalog_file, setup['current_site_code'], 'subject_map_exceptions.csv', 'email')
+        parse_site_details_and_send(site_catalog_file, 'subject_map_exceptions.csv', 'email')
 
 
-def parse_site_details_and_send(site_catalog_file, site_code, file_name, action):
+def parse_site_details_and_send(site_catalog_file, file_name, action):
     '''Function to parse the site details from site catalog and send
     the subject map csv to the sftp server
 
@@ -147,13 +145,14 @@ def parse_site_details_and_send(site_catalog_file, site_code, file_name, action)
     site_num = len(site_data.findall(".//site"))
     gsmlogger.logger.info(str(site_num) + " total subject site entries read into tree.")
     sftp_instance = sftp_transactions()
+
     for site in site_data.iter('site'):
-        site_catalog_code = site.findtext('site_code')
-        if site_code == site_catalog_code:
-            subjectmap_URI = site.findtext('subjectmap_URI')
-            subjectmap_uname = site.findtext('subjectmap_uname')
-            subjectmap_password = site.findtext('subjectmap_password')
-            subjectmap_contact_email = site.findtext('subjectmap_contact_email')
+        site_name = site.findtext('site_name')
+        if site_name == 'destination':
+            subjectmap_URI = site.findtext('site_URI')
+            subjectmap_uname = site.findtext('site_uname')
+            subjectmap_password = site.findtext('site_password')
+            subjectmap_contact_email = site.findtext('site_contact_email')
             # is it a file transfer or attachment email?
             if action == 'sftp':
               '''Pick up the subject_map.csv and put it in the specified
@@ -161,7 +160,7 @@ def parse_site_details_and_send(site_catalog_file, site_code, file_name, action)
 
               '''
               # remote path to send the file to
-              subjectmap_remotepath = site.findtext('subjectmap_remotepath')
+              subjectmap_remotepath = site.findtext('site_remotepath')
               print 'Sending '+file_path+' to '+subjectmap_URI+':'\
                                                 +subjectmap_remotepath
               gsmlogger.logger.info('Sending %s to %s:%s', \
@@ -237,20 +236,20 @@ def get_smi_and_parse(site_catalog_file):
     As we need to get the only smi from the sftp to this site.
 
     '''
-    reference_site_code = setup['current_site_code']
     for site in site_data.iter('site'):
-        site_code = site.findtext('site_code')
-        if reference_site_code == site_code:
-            site_URI = site.findtext('smi_URI')
-            site_uname = site.findtext('smi_uname')
-            site_password = site.findtext('smi_password')
-            site_contact_email = site.findtext('smi_contact_email')
+        site_name = site.findtext('site_name')
+        if site_name == 'source':
+            site_URI = site.findtext('site_URI')
+            site_uname = site.findtext('site_uname')
+            site_password = site.findtext('site_password')
+            site_contact_email = site.findtext('site_contact_email')
             '''Pick up the smi file from the server and place it in the proj_root
 
             '''
-            file_name = 'smi.xml'
-            site_remotepath = site.findtext('smi_remotepath')+file_name
+            site_remotepath = site.findtext('site_remotepath')
+            file_name = site_remotepath.split("/")[-1]
             site_localpath = proj_root+file_name
+
             print 'Retrieving '+site_remotepath+' from '+site_URI
             gsmlogger.logger.info('Retrieving %s from %s', \
                                                     site_remotepath, site_URI)
@@ -261,7 +260,7 @@ def get_smi_and_parse(site_catalog_file):
                       site_remotepath, site_localpath, site_contact_email)
     catalog.close()
     gsmlogger.logger.info("site catalog XML file closed.")
-    pass
+    return site_localpath
 
 def write_element_tree_to_file(element_tree, file_name):
     '''function to write ElementTree to a file
