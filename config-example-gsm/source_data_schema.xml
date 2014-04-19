@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='US-ASCII'?>
 <source>
-	<redcap_uri>https://www.redcap-host.org/api</redcap_uri>
+	<redcap_uri>https://redcap-host.destination_site.edu/api</redcap_uri>
 	<apitoken>123456789123456789</apitoken>
 	<fields>
 		<field>study_subject_number</field>
