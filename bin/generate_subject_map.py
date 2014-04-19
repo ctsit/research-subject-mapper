@@ -127,13 +127,13 @@ def main():
         parse_site_details_and_send(site_catalog_file, 'subject_map_exceptions.csv', 'email')
 
 
-def parse_site_details_and_send(site_catalog_file, file_name, action):
+def parse_site_details_and_send(site_catalog_file, local_file_name, action):
     '''Function to parse the site details from site catalog and send
     the subject map csv to the sftp server
 
     '''
     # local absolute path of the file to send
-    local_file_path = proj_root+file_name
+    local_file_path = proj_root+local_file_name
     if not os.path.exists(local_file_path):
         raise GSMLogger().LogException("Error: subject map file "+local_file_path+" file not found")
     if not os.path.exists(site_catalog_file):
@@ -169,9 +169,11 @@ def parse_site_details_and_send(site_catalog_file, file_name, action):
               gsmlogger.logger.info('Any error will be reported to %s', \
                                                       subjectmap_contact_email)
               # put the subject map csv file
+              subjectmap_remote_directory = subjectmap_remotepath.rsplit("/", 1)[0] + "/"
+              remote_file_name = subjectmap_remotepath.split("/")[-1]
               sftp_instance.send_file_to_uri(subjectmap_URI, subjectmap_uname, \
-                                  subjectmap_password, subjectmap_remotepath, \
-                                file_name, local_file_path, subjectmap_contact_email)
+                                  subjectmap_password, subjectmap_remote_directory, \
+                                remote_file_name, local_file_path, subjectmap_contact_email)
             elif action == 'email':
               '''Send the subject_map_exceptions.csv to the contact
                 email address as an attachment
