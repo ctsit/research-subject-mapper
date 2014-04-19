@@ -133,9 +133,9 @@ def parse_site_details_and_send(site_catalog_file, file_name, action):
 
     '''
     # local absolute path of the file to send
-    file_path = proj_root+file_name
-    if not os.path.exists(file_path):
-        raise GSMLogger().LogException("Error: subject map file "+file_path+" file not found")
+    local_file_path = proj_root+file_name
+    if not os.path.exists(local_file_path):
+        raise GSMLogger().LogException("Error: subject map file "+local_file_path+" file not found")
     if not os.path.exists(site_catalog_file):
         raise GSMLogger().LogException("Error: site_catalog xml file not found at \
             file not found at "+ site_catalog_file)
@@ -161,30 +161,30 @@ def parse_site_details_and_send(site_catalog_file, file_name, action):
               '''
               # remote path to send the file to
               subjectmap_remotepath = site.findtext('site_remotepath')
-              print 'Sending '+file_path+' to '+subjectmap_URI+':'\
+              print 'Sending '+local_file_path+' to '+subjectmap_URI+':'\
                                                 +subjectmap_remotepath
               gsmlogger.logger.info('Sending %s to %s:%s', \
-                              file_path, subjectmap_URI, subjectmap_remotepath)
+                              local_file_path, subjectmap_URI, subjectmap_remotepath)
               print 'Any error will be reported to '+subjectmap_contact_email
               gsmlogger.logger.info('Any error will be reported to %s', \
                                                       subjectmap_contact_email)
               # put the subject map csv file
               sftp_instance.send_file_to_uri(subjectmap_URI, subjectmap_uname, \
                                   subjectmap_password, subjectmap_remotepath, \
-                                file_name, file_path, subjectmap_contact_email)
+                                file_name, local_file_path, subjectmap_contact_email)
             elif action == 'email':
               '''Send the subject_map_exceptions.csv to the contact
                 email address as an attachment
 
               '''
-              print 'Sending '+file_path+' as email attachement to '\
+              print 'Sending '+local_file_path+' as email attachement to '\
                                                       +subjectmap_contact_email
               gsmlogger.logger.info('Sending %s as email attachement to %s', \
-                                          file_path, subjectmap_contact_email)
+                                          local_file_path, subjectmap_contact_email)
               # TODO change the mail body as required
               mail_body = 'Hi, \n this mail contains attached exceptions.csv file.'
               email_transactions().send_mail(setup['sender_email'], \
-                              subjectmap_contact_email, mail_body, [file_path])
+                              subjectmap_contact_email, mail_body, [local_file_path])
             else:
               print 'Invalid option. either sftp/email should be used'
               gsmlogger.logger.info('Invalid option. either sftp/email should be used')
