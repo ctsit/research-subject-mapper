@@ -82,7 +82,9 @@ def main():
     exceptions = False
     for item in smi_data.iter('item'):
         if item.findtext('research_subject_id') in person_index_dict.keys():
+            gsmlogger.logger.debug("Processing research_subject_id %s", item.findtext('research_subject_id'))
             if(person_index_dict[item.findtext('research_subject_id')][0]==item.findtext('yob')):
+                gsmlogger.logger.debug("yob matched for research_subject_id %s", item.findtext('research_subject_id'))
                 mrn = etree.SubElement(item, "mrn")
                 mrn.text = person_index_dict[item.findtext('research_subject_id')][1]
                 facility_code = etree.SubElement(item, "facility_code")
@@ -91,6 +93,7 @@ def main():
                 subjectmap_root.append(item)
 
             else:
+                gsmlogger.logger.debug("yob not matched for research_subject_id %s", item.findtext('research_subject_id'))
                 exception_item = etree.Element("item")
                 research_subject_id = etree.SubElement(exception_item, "research_subject_id")
                 research_subject_id.text = item.findtext('research_subject_id')
@@ -106,7 +109,13 @@ def main():
     transform_xsl = setup['xml2csv_xsl']
     xslt = etree.parse(proj_root+transform_xsl)
     transform = etree.XSLT(xslt)
-    subject_map_csv = open("subject_map.csv", "w")
+
+    subject_map_file = proj_root+"subject_map.csv"
+    try:
+        subject_map_csv = open(subject_map_file, "w")
+    except IOError:
+        raise GSMLogger().LogException("Could not open file %s for write", subject_map_file)
+
     subject_map_csv.write("%s"%transform(subjectmap_root))
     subject_map_csv.close()
     # remove the smi.xml from the folder
@@ -115,15 +124,21 @@ def main():
     try:
       os.remove(smi_path)
     except OSError:
-      pass
+        raise GSMLogger().LogException("Could not remove file %s ", smi_path)
+
     # send the subject_map.csv to EMR team (sftp server)
     parse_site_details_and_send(site_catalog_file, 'subject_map.csv', 'sftp')
 
-    subject_map_exception_csv = open("subject_map_exceptions.csv", "w")
-    subject_map_exception_csv.write("%s"%transform(subjectmap_exceptions_root))
-    subject_map_exception_csv.close()
     # send subject_map_exceptions.csv as email attachment
     if(exceptions):
+        subject_map_exception_file = proj_root+"subject_map_exceptions.csv"
+        try:
+            subject_map_csv = open(subject_map_exception_file, "w")
+        except IOError:
+            raise GSMLogger().LogException("Could not open file %s for write", subject_map_exception_file)
+
+        subject_map_exception_csv.write("%s"%transform(subjectmap_exceptions_root))
+        subject_map_exception_csv.close()
         parse_site_details_and_send(site_catalog_file, 'subject_map_exceptions.csv', 'email')
 
 
