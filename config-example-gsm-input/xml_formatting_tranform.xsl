@@ -5,7 +5,7 @@
                 
     <xsl:output method="xml" version="4.0" encoding="UTF-8" indent="yes" />
     <!-- Creating a key for subject ID -->
-    <xsl:key name="itemBySubID" match="item" use="dm_usubjid"/>
+    <xsl:key name="itemBySubID" match="item" use="record_id"/>
     
     <!-- Copy everything from the source -->
     <xsl:template match=" node()|@*">
@@ -17,13 +17,13 @@
      <xsl:template match="item[descendant::dm_rfstdtc[. = '']]"/>
      <!-- Select only one subject -->
      <xsl:template match=
-  "item[not(generate-id() = generate-id(key('itemBySubID', dm_usubjid)[1]))]"
+  "item[not(generate-id() = generate-id(key('itemBySubID', record_id)[1]))]"
   />
         <!-- Drop the redcap_event_name  -->
      <xsl:template match="redcap_event_name"/>
      
         <!-- copy subject id and add new siteid -->
-     <xsl:template match="dm_usubjid">
+     <xsl:template match="record_id">
         <research_subject_id>
             <xsl:value-of select="." />
         </research_subject_id>

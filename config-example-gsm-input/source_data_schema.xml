@@ -3,7 +3,6 @@
 	<redcap_uri>https://www.redcap-host.org/api</redcap_uri>
 	<apitoken>123456789123456789</apitoken>
 	<fields>
-		<field>dm_usubjid</field>
 		<field>dm_rfstdtc</field>
 		<field>eot_dsstdtc</field>
 		<field>dm_brthyr</field>
