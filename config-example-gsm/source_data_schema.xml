@@ -6,6 +6,5 @@
 		<field>study_subject_number</field>
 		<field>study_subject_number_verifier_value</field>
 		<field>mrn</field>
-		<field>facility_code</field>
 	</fields>
 </source>
