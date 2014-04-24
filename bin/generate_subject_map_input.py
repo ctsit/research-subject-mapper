@@ -49,7 +49,7 @@ def main():
     transform_xsl = setup['xml_formatting_tranform_xsl']
     #get data from the redcap for the fields listed in the source_data_schema.xml
     response = redcap_transactions().get_data_from_redcap(properties, gsmlogger.logger)
-    
+
     #XSL Transformation 1: This transformation removes junk data, rename elements and extracts site_id and adds new tag site_id
     xml_tree = etree.fromstring(response)
     xslt = etree.parse(proj_root+transform_xsl)
@@ -98,7 +98,7 @@ def parse_site_details_and_send(site_catalog_file, smi_filenames):
     catalog_dict = {}
     for smi_file_no in smi_filenames:
         if not os.path.exists(proj_root+'smi'+smi_file_no+'.xml'):
-            raise GSMLogger().LogException("Error: smi file "+smi_file+" file not found")
+            raise GSMLogger().LogException("Error: smi file "+smi_file_no+" file not found")
     if not os.path.exists(site_catalog_file):
         raise GSMLogger().LogException("Error: site_catalog xml file not found at \
             file not found at "+ site_catalog_file)
