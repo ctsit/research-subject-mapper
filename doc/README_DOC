@@ -1,22 +1,29 @@
 Documentation folder for the project Research Subject Mapper
 
+Research Subject Mapper is a tool designed to allow Data Aggregators and Site Administrators to process data without actually exposing privileged content to unauthorized entities. The intended usage of this tool is to query against a REDCap instance that is operating as a person index. Refer to the data dictionary (personIndex_DataDictionary.csv) in the doc directory to see the fields used in the person index REDCap project.
+
+This tool has 2 components. The first component, generate_subject_map_input.py, allows data integrators to process data from REDCap instances to generate an input file for site administrators to use as an input to pull records from their local electronic health record (EHR).
+
+Another component, generate_subject_map.py, allows site admins to run cron jobs to map health records to research subject ids in the research subject map input file.
+
 generate_subject_map_input.py: 
 
-generate_subject_map_input.py is a tool used to generate patient-to-research subject mapping files based on inputs from REDCap projects.
-This tool reads inputs from the RedCap for the fields listed in the source_data_schema.xml and processes the data to generate an input file for subject mapping. This file smi.xml will be uploaded to the site ftp location listed in the site-catalog.xml
+generate_subject_map_input.py is a tool used to generate patient-to-research subject ID mapping files based on inputs from REDCap projects.
+This tool reads inputs from the REDCap for the fields listed in the source_data_schema.xml and processes the data to generate an input file for subject mapping. This file smi.xml will be uploaded to the secure FTP location listed in site-catalog.xml.
 
 
 Steps to use generate_subject_map_input.py:
-1) All files and input paramters required to run generate_subject_map_input.py can be found in the config-example-gsm-input folder.
-2) Modify files in config-example-gsm-input with your implementation specific details (for example: site details, sftp details, source_data details)
-3) Rename config-example-gsm-input to config
-4) Run generate_subject_map_input.py
+All files and input paramters required to run generate_subject_map_input.py can be found in the config-example-gsm-input folder.
+1) Modify files in config-example-gsm-input with your implementation specific details (for example: site details, sftp credentials, source_data details).
+2) Rename config-example-gsm-input to config.
+3) Run generate_subject_map_input.py.
 
 generate_subject_map.py:
-generate_subject_map.py reads the smi.xml from the site ftp listed in the site-catalog.xml. It also reads inputs from the person index for the fileds listed in the source_data_schema.xml. This tool maps the subjects in the smi.xml with subjects in person index based on subject id and year of birth. All successfully mapped subjects are written to subject_map.csv and all failed mappings are written to subject_map_exceptions.csv 
+generate_subject_map.py reads the smi.xml from the site FTP listed in the site-catalog.xml. It also reads inputs from the person index for the fields listed in the source_data_schema.xml. This tool maps the subjects in the smi.xml to the subjects in person index based on research subject id and year of birth. All successfully mapped subjects are written to subject_map.csv and all failed mappings are written to subject_map_exceptions.csv.
 
 Steps to use generate_subject_map.py:
-1) All files and input paramters required to run generate_subject_map.py can be found in the config-example-gsm folder.
-2) Modify files in config-example-gsm with your implementation specific details (for example: site details, sftp details, source_data details)
-3) Rename config-example-gsm to config
-4) Run generate_subject_map.py
+ All files and input parameters required to run generate_subject_map.py can be found in the config-example-gsm folder.
+1) Modify files in config-example-gsm with your implementation specific details (for example: site details, SFTP details, source_data details)
+2) Rename config-example-gsm to config
+3) Run generate_subject_map.py
+
