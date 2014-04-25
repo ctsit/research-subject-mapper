@@ -80,7 +80,7 @@ def main():
     for k in tree:
         write_element_tree_to_file(ET.ElementTree(k),proj_root+'smi'+k.attrib['id']+'.xml')
         smi_filenames.append(k.attrib['id'])
-    parse_site_details_and_send(site_catalog_file, smi_filenames)
+    parse_site_details_and_send(site_catalog_file, smi_filenames,gsmlogger.logger)
 
 
 def write_element_tree_to_file(element_tree, file_name):
@@ -93,7 +93,7 @@ def write_element_tree_to_file(element_tree, file_name):
     element_tree.write(file_name, encoding="us-ascii", xml_declaration=True,
             method="xml")
 
-def parse_site_details_and_send(site_catalog_file, smi_filenames):
+def parse_site_details_and_send(site_catalog_file, smi_filenames,logger):
     '''Function to parse the site details from site catalog'''
     catalog_dict = {}
     for smi_file_no in smi_filenames:
@@ -106,7 +106,7 @@ def parse_site_details_and_send(site_catalog_file, smi_filenames):
         catalog = open(site_catalog_file, 'r')
     site_data = etree.parse(site_catalog_file)
     site_num = len(site_data.findall(".//site"))
-    gsmlogger.logger.info(str(site_num) + " total subject site entries read into tree.")
+    logger.info(str(site_num) + " total subject site entries read into tree.")
     sftp_instance = sftp_transactions()
     for site in site_data.iter('site'):
         site_code = site.findtext('site_code')
@@ -123,9 +123,9 @@ def parse_site_details_and_send(site_catalog_file, smi_filenames):
             site_remotepath = site.findtext('site_remotepath')
             site_localpath = proj_root+file_name
             print 'Sending '+site_localpath+' to '+site_URI+':'+site_remotepath
-            gsmlogger.logger.info('Sending %s to %s:%s', site_localpath, site_URI, site_remotepath)
+            logger.info('Sending %s to %s:%s', site_localpath, site_URI, site_remotepath)
             print 'Any error will be reported to '+site_contact_email
-            gsmlogger.logger.info('Any error will be reported to %s',site_contact_email)
+            logger.info('Any error will be reported to %s',site_contact_email)
             sftp_instance.send_file_to_uri(site_URI, site_uname, site_password, site_remotepath, 'smi.xml', site_localpath, site_contact_email)
             # remove the smi.xml from the folder
             try:
@@ -134,9 +134,9 @@ def parse_site_details_and_send(site_catalog_file, smi_filenames):
               pass
         else:
             print 'Site code '+site_code+' does not exist'
-            gsmlogger.logger.info('Site code does not exist')
+            logger.info('Site code does not exist')
     catalog.close()
-    gsmlogger.logger.info("site catalog XML file closed.")
+    logger.info("site catalog XML file closed.")
     pass
 
 
