@@ -17,7 +17,7 @@ class TestReadConfig(unittest.TestCase):
     "smtp_host_for_outbound_mail": "smtp.example.org",
     "system_log_file": "log/rsm.log",
     "source_data_schema_file": "source_data_schema.xml",
-    "site_catalog_file": "site-catalog.xml",
+    "site_catalog": "site-catalog.xml",
     "redcap_uri": "https://example.org/redcap/api/",
     "token": "ABCDEF878D219CFA5D3ADF7F9AB12345" }"""
         f = open(self.setupFile[1], 'r+')
@@ -36,7 +36,7 @@ class TestReadConfig(unittest.TestCase):
         self.assertEqual(self.setup['system_log_file'], "log/rsm.log")
         self.assertEqual(self.setup['source_data_schema_file'],
             "source_data_schema.xml")
-        self.assertEqual(self.setup['site_catalog_file'], "site-catalog.xml")
+        self.assertEqual(self.setup['site_catalog'], "site-catalog.xml")
         self.assertEqual(self.setup['redcap_uri'],
             "https://example.org/redcap/api/")
         self.assertEqual(self.setup['token'],
