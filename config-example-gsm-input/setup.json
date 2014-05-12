@@ -1,9 +1,12 @@
 {
-    "project_name": "research subject mapper",
-        
-    "redcap_server":"https://sample-redcapserver.university.edu",
-    "current_site_code":"123",
+    "project_name": "Generate Subject Map Input files for Project",
 
-    "redcap_uri": "https://sample-redcapuri.org/sample-path/",
-    "token": "TOKENTOKENTOKENTOKENTOKENTOKEN"
+    "site_catalog": "config/site-catalog.xml",
+    "source_data_schema_file": "config/source_data_schema.xml",
+    
+    "system_log_file": "log/gsmi.log",
+
+    "xml_formatting_tranform_xsl": "config/xml_formatting_tranform.xsl",
+    "groupby_siteid_transform_xsl": "config/groupby_siteid_transform.xsl",
+    "remove_junktags_transform_xsl": "config/remove_junktags_transform.xsl"
 }
