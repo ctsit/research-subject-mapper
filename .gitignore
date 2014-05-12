@@ -10,7 +10,7 @@ dist
 build
 eggs
 parts
-bin
+config
 var
 sdist
 develop-eggs
@@ -34,3 +34,8 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+log/rsm.log
+
+rsm-devconfig/
+*.xml

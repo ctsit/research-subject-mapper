@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='US-ASCII'?>
+<sites_list>
+	<site>
+		<site_code>001</site_code>
+		<site_URI>sftp.example.edu</site_URI>
+		<site_uname>test_name</site_uname>
+		<site_password>test_password</site_password>
+		<site_remotepath>/path/to/file</site_remotepath>
+		<site_contact_email>some_email@example.edu</site_contact_email>
+	</site>
+	<site>
+		<site_code>222</site_code>
+		<site_URI>sftp.otherexample.edu</site_URI>
+		<site_uname>test_name</site_uname>
+		<site_password>test_password</site_password>
+		<site_remotepath>/path/to/file</site_remotepath>
+		<site_contact_email>temp@fake.otherexample.edu</site_contact_email>
+	</site>
+	<site>
+		<site_code>333</site_code>
+		<site_URI>sftp.yetanotherexample.edu</site_URI>
+		<site_uname>test_name</site_uname>
+		<site_password>test_password</site_password>
+		<site_remotepath>/path/to/file</site_remotepath>
+		<site_contact_email>temp@yetanotherexample.edu</site_contact_email>
+	</site>
+</sites_list>
