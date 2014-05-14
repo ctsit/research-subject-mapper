@@ -31,6 +31,9 @@ from email_transactions import email_transactions
 from redcap_transactions import redcap_transactions
 from GSMLogger import GSMLogger
 
+def handle_blanks(s):
+	return '' if s is None else s
+
 def main():
 
     # Configure logging
@@ -116,8 +119,17 @@ def main():
     except IOError:
         raise GSMLogger().LogException("Could not open file %s for write", subject_map_file)
 
-    subject_map_csv.write("%s"%transform(subjectmap_root))
+    subject_map_csv.write("%s"%'"research_subject_id","start_date","end_date","mrn","facility_code"\n')
+    for item in subjectmap_root.iter("item"):
+		line = '"{0}","{1}","{2}","{3}","{4}"\n'.format(\
+				handle_blanks(item.find("research_subject_id").text), \
+				handle_blanks(item.find("start_date").text),\
+				handle_blanks(item.find("end_date").text),\
+				handle_blanks(item.find("mrn").text),\
+				handle_blanks(item.find("facility_code").text))
+		subject_map_csv.write("%s"%line)
     subject_map_csv.close()
+
     # remove the smi.xml from the folder
     # removing smi.xml is necessary as the XSLT transformation writes data to
     # smi.xml
@@ -133,12 +145,19 @@ def main():
     if(exceptions):
         subject_map_exception_file = proj_root+"subject_map_exceptions.csv"
         try:
-            subject_map_csv = open(subject_map_exception_file, "w")
+            subject_map_exception_csv = open(subject_map_exception_file, "w")
         except IOError:
             raise GSMLogger().LogException("Could not open file %s for write", subject_map_exception_file)
 
-        subject_map_exception_csv.write("%s"%transform(subjectmap_exceptions_root))
+        subject_map_exception_csv.write("%s"%'"research_subject_id","person_index_yob","redcap_yob"\n')
+        for item in subjectmap_exceptions_root.iter("item"):
+            line = '"{0}","{1}","{2}"\n'.format(\
+                    handle_blanks(item.find("research_subject_id").text), \
+                    handle_blanks(item.find("Person_Index_YOB").text),\
+                    handle_blanks(item.find("HCVTarget_YOB").text))
+            subject_map_exception_csv.write("%s"%line)
         subject_map_exception_csv.close()
+
         parse_site_details_and_send(site_catalog_file, 'subject_map_exceptions.csv', 'email')
 
 
