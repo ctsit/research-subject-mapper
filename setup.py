@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='Research Subject Mapper',
-    version='0.7.0',
+    version='0.7.1',
     author='Christopher P Barnes, Philip Chase, Nicolas Rejack',
     author_email='cpb@ufl.edu, pbc@ufl.edu, nrejack@ufl.edu',
     packages=['bin'],
