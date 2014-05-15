@@ -1,3 +1,10 @@
+ 2014-05-15 v0.7.1
+
+ * Summary: Fix column order in subjectMap.csv output
+
+ * Replace tabs with 4 spaces to address formatting in previous commit (Philip Chase)
+ * Replacing XSLT with Python for xml2csv conversion (Taeber Rapczak)
+
 2014-05-12 v0.7.0
 
  * Summary: First release
