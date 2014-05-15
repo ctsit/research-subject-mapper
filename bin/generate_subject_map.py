@@ -32,7 +32,7 @@ from redcap_transactions import redcap_transactions
 from GSMLogger import GSMLogger
 
 def handle_blanks(s):
-	return '' if s is None else s
+    return '' if s is None else s
 
 def main():
 
@@ -121,13 +121,13 @@ def main():
 
     subject_map_csv.write("%s"%'"research_subject_id","start_date","end_date","mrn","facility_code"\n')
     for item in subjectmap_root.iter("item"):
-		line = '"{0}","{1}","{2}","{3}","{4}"\n'.format(\
-				handle_blanks(item.find("research_subject_id").text), \
-				handle_blanks(item.find("start_date").text),\
-				handle_blanks(item.find("end_date").text),\
-				handle_blanks(item.find("mrn").text),\
-				handle_blanks(item.find("facility_code").text))
-		subject_map_csv.write("%s"%line)
+        line = '"{0}","{1}","{2}","{3}","{4}"\n'.format(\
+                handle_blanks(item.find("research_subject_id").text), \
+                handle_blanks(item.find("start_date").text),\
+                handle_blanks(item.find("end_date").text),\
+                handle_blanks(item.find("mrn").text),\
+                handle_blanks(item.find("facility_code").text))
+        subject_map_csv.write("%s"%line)
     subject_map_csv.close()
 
     # remove the smi.xml from the folder
