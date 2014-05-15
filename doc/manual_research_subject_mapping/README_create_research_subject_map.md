@@ -1,7 +1,7 @@
 #INTRODUCTION
 This document describes the need for creating a research subject map to use with the RED-I software project and details a method for creating this manually. 
 
-* The most recent version of this document can be found [on GitHub](https://github.com/ctsit/research-subject-mapper/raw/develop/doc/manual_research_subject_mapping/README_create_research_subject_map.md)
+* The most recent version of this document can be found at: [https://github.com/ctsit/research-subject-mapper/blob/develop/doc/manual_research_subject_mapping/README_create_research_subject_map.md]
 
 #REQUIREMENTS
 This document is intended to be used along with the file [example_subject_map.csv](https://github.com/ctsit/research-subject-mapper/raw/develop/doc/manual_research_subject_mapping/example_subject_map.csv)
