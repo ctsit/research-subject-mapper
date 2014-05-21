@@ -25,6 +25,7 @@ import sys
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
+configuration_directory = proj_root + "config/"
 sys.path.insert(0, proj_root+'bin/utils/')
 from sftp_transactions import sftp_transactions
 from email_transactions import email_transactions
@@ -41,7 +42,8 @@ def main():
     gsmlogger = GSMLogger()
     gsmlogger.configure_logging()
 
-    setup_json = proj_root+'config/setup.json'
+    #setup_json = proj_root+'config/setup.json'
+    setup_json = configuration_directory + "setup.json"
     global setup
     setup = read_config(setup_json)
     site_catalog_file = proj_root+setup['site_catalog']
@@ -54,7 +56,7 @@ def main():
     response = redcap_transactions().get_data_from_redcap(properties,\
                  gsmlogger.logger)
     xml_tree = etree.fromstring(response)
-    
+
     #XSL Transformation : transforms the person_index data
     transform_xsl = setup['person_index_transforma_xsl']
     xslt = etree.parse(proj_root+transform_xsl)
@@ -113,7 +115,8 @@ def main():
     xslt = etree.parse(proj_root+transform_xsl)
     transform = etree.XSLT(xslt)
 
-    subject_map_file = proj_root+"subject_map.csv"
+    #subject_map_file = proj_root+"subject_map.csv"
+    subject_map_file = configuration_directory+"subject_map.csv"
     try:
         subject_map_csv = open(subject_map_file, "w")
     except IOError:
@@ -143,7 +146,8 @@ def main():
 
     # send subject_map_exceptions.csv as email attachment
     if(exceptions):
-        subject_map_exception_file = proj_root+"subject_map_exceptions.csv"
+        #subject_map_exception_file = proj_root+"subject_map_exceptions.csv"
+        subject_map_exception_file = configuration_directory+"subject_map_exceptions.csv"
         try:
             subject_map_exception_csv = open(subject_map_exception_file, "w")
         except IOError:
@@ -167,7 +171,8 @@ def parse_site_details_and_send(site_catalog_file, local_file_name, action):
 
     '''
     # local absolute path of the file to send
-    local_file_path = proj_root+local_file_name
+    #local_file_path = proj_root+local_file_name
+    local_file_path = configuration_directory+local_file_name
     if not os.path.exists(local_file_path):
         raise GSMLogger().LogException("Error: subject map file "+local_file_path+" file not found")
     if not os.path.exists(site_catalog_file):
@@ -284,7 +289,8 @@ def get_smi_and_parse(site_catalog_file):
             '''
             site_remotepath = site.findtext('site_remotepath')
             file_name = site_remotepath.split("/")[-1]
-            site_localpath = proj_root+file_name
+            #site_localpath = proj_root+file_name
+            site_localpath = configuration_directory+file_name
 
             print 'Retrieving '+site_remotepath+' from '+site_URI
             gsmlogger.logger.info('Retrieving %s from %s', \
