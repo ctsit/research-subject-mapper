@@ -8,6 +8,7 @@ from lxml import etree
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../../")
 proj_root = os.path.abspath(goal_dir)+'/'
+configuration_directory = proj_root + "config/"
 sys.path.insert(0, proj_root+'bin')
 
 
@@ -25,7 +26,7 @@ class redcap_transactions:
         host = ''
         path = ''
         source_data_schema_file = ''
-        source_data_schema_file = proj_root + setup['source_data_schema_file']
+        source_data_schema_file = configuration_directory + setup['source_data_schema_file']
 
         if not os.path.exists(source_data_schema_file):
             raise Exception("Error: source_data_schema.xml file not found at\
