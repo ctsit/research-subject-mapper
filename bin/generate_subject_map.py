@@ -15,35 +15,61 @@ __status__ = "Development"
 from lxml import etree
 import xml.etree.ElementTree as ET
 import logging
-from lxml import etree
 import httplib
 from urllib import urlencode
 import os
 import sys
+import json
 import argparse
+import contextlib
+import shutil
+import tempfile
+import datetime
+
 
 # This addresses the issues with relative paths
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
-default_configuration_directory = proj_root + "config/"
 sys.path.insert(0, proj_root+'bin/utils/')
+
 from sftp_transactions import sftp_transactions
 from email_transactions import email_transactions
 from redcap_transactions import redcap_transactions
 from GSMLogger import GSMLogger
 
-def handle_blanks(s):
-    return '' if s is None else s
+# Command line default argument values
+default_configuration_directory = proj_root + "config/"
+default_do_keep_gen_files = None
 
+
+'''
+Application entry point
+@TODO: extract logic into separate functions to reduce size
+'''
 def main():
+    global configuration_directory
+    global do_keep_gen_files
 
     # obtaining command line arguments for path to config directory
-    parser = argparse.ArgumentParser(description='Setting path to configuration directory')
-    parser.add_argument('-c', dest='configuration_directory_path', default=default_configuration_directory, required=False, help='Specify the path to the configuration directory')
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-c', dest='configuration_directory_path',
+        default=default_configuration_directory,
+        required=False,
+        help='Specify the path to the configuration directory')
+
+    # read the optional argument `-k` for keeping the generated files
+    parser.add_argument(
+        '-k', '--keep',
+        default=default_do_keep_gen_files,
+        required=False,
+        help = 'Specify `yes` to preserve the files generated during execution')
+
+
     args = vars(parser.parse_args())
-    global configuration_directory
     configuration_directory = args['configuration_directory_path']
+    do_keep_gen_files       = False if args['keep'] is None else True
 
     # Configure logging
     global gsmlogger
@@ -124,61 +150,76 @@ def main():
     xslt = etree.parse(configuration_directory+transform_xsl)
     transform = etree.XSLT(xslt)
 
-    subject_map_file = configuration_directory+"subject_map.csv"
+    tmp_folder = get_temp_path(do_keep_gen_files) 
+    subject_map_file = tmp_folder + "subject_map.csv"
+    gsmlogger.logger.info('Using path subject map file path: ' + subject_map_file)
+
     try:
         subject_map_csv = open(subject_map_file, "w")
-    except IOError:
-        raise GSMLogger().LogException("Could not open file %s for write", subject_map_file)
+        subject_map_csv.write("%s"%'"research_subject_id","start_date","end_date","mrn","facility_code"\n')
 
-    subject_map_csv.write("%s"%'"research_subject_id","start_date","end_date","mrn","facility_code"\n')
-    for item in subjectmap_root.iter("item"):
-        line = '"{0}","{1}","{2}","{3}","{4}"\n'.format(\
+        for item in subjectmap_root.iter("item"):
+            line = '"{0}","{1}","{2}","{3}","{4}"\n'.format(\
                 handle_blanks(item.find("research_subject_id").text), \
                 handle_blanks(item.find("start_date").text),\
                 handle_blanks(item.find("end_date").text),\
                 handle_blanks(item.find("mrn").text),\
                 handle_blanks(item.find("facility_code").text))
-        subject_map_csv.write("%s"%line)
-    subject_map_csv.close()
+            subject_map_csv.write("%s"%line)
 
-    # remove the smi.xml from the folder
-    # removing smi.xml is necessary as the XSLT transformation writes data to
-    # smi.xml
+        subject_map_csv.close()
+    except IOError:
+        raise GSMLogger().LogException("Could not open file %s for write", subject_map_file)
+
+
+    # remove the smi.xml from the folder because the XSLT process
+    # writes data to smi.xml
     try:
       os.remove(smi_path)
     except OSError:
         raise GSMLogger().LogException("Could not remove file %s ", smi_path)
 
     # send the subject_map.csv to EMR team (sftp server)
-    parse_site_details_and_send(site_catalog_file, 'subject_map.csv', 'sftp')
+    parse_site_details_and_send(site_catalog_file, subject_map_file, 'sftp')
+    if do_keep_gen_files :
+        print ' * Keeping the temporary file: ' + subject_map_file
+    else :
+        print ' * Removing the temporary file: ' + subject_map_file
+        os.remove(subject_map_file)
+
 
     # send subject_map_exceptions.csv as email attachment
-    if(exceptions):
-        subject_map_exception_file = configuration_directory+"subject_map_exceptions.csv"
+    if exceptions :
+        subject_map_exceptions_file = tmp_folder + 'subject_map_exceptions.csv'
         try:
-            subject_map_exception_csv = open(subject_map_exception_file, "w")
+            subject_map_exceptions_csv = open(subject_map_exceptions_file, "w")
         except IOError:
-            raise GSMLogger().LogException("Could not open file %s for write", subject_map_exception_file)
+            raise GSMLogger().LogException("Could not open file %s for write", subject_map_exceptions_file)
 
-        subject_map_exception_csv.write("%s"%'"research_subject_id","person_index_yob","redcap_yob"\n')
+        subject_map_exceptions_csv.write("%s"%'"research_subject_id","person_index_yob","redcap_yob"\n')
         for item in subjectmap_exceptions_root.iter("item"):
             line = '"{0}","{1}","{2}"\n'.format(\
                     handle_blanks(item.find("research_subject_id").text), \
                     handle_blanks(item.find("Person_Index_YOB").text),\
                     handle_blanks(item.find("HCVTarget_YOB").text))
-            subject_map_exception_csv.write("%s"%line)
-        subject_map_exception_csv.close()
+            subject_map_exceptions_csv.write("%s"%line)
+        subject_map_exceptions_csv.close()
 
-        parse_site_details_and_send(site_catalog_file, 'subject_map_exceptions.csv', 'email')
+        parse_site_details_and_send(site_catalog_file, subject_map_exceptions_file, 'email')
+        if do_keep_gen_files :
+            print ' * Keeping the temporary file: ' + subject_map_exceptions_file
+        else :
+            print ' * Removing the temporary file: ' + subject_map_exceptions_file
+            os.remove(subject_map_exceptions_file)
 
 
-def parse_site_details_and_send(site_catalog_file, local_file_name, action):
+
+
+def parse_site_details_and_send(site_catalog_file, local_file_path, action):
     '''Function to parse the site details from site catalog and send
     the subject map csv to the sftp server
 
     '''
-    # local absolute path of the file to send
-    local_file_path = configuration_directory+local_file_name
     if not os.path.exists(local_file_path):
         raise GSMLogger().LogException("Error: subject map file "+local_file_path+" file not found")
     if not os.path.exists(site_catalog_file):
@@ -206,35 +247,37 @@ def parse_site_details_and_send(site_catalog_file, local_file_name, action):
               '''
               # remote path to send the file to
               subjectmap_remotepath = site.findtext('site_remotepath')
-              print 'Sending '+local_file_path+' to '+subjectmap_URI+':'\
-                                                +subjectmap_remotepath
-              gsmlogger.logger.info('Sending %s to %s:%s', \
-                              local_file_path, subjectmap_URI, subjectmap_remotepath)
-              print 'Any error will be reported to '+subjectmap_contact_email
-              gsmlogger.logger.info('Any error will be reported to %s', \
-                                                      subjectmap_contact_email)
+              info = '\nSending file [' + local_file_path + '] to ' + subjectmap_URI + ':' + subjectmap_remotepath
+              print info
+              gsmlogger.logger.info(info)
+
+              info = 'Errors will be reported to: ' + subjectmap_contact_email
+              print info
+              gsmlogger.logger.info(info)
+
               # put the subject map csv file
               subjectmap_remote_directory = subjectmap_remotepath.rsplit("/", 1)[0] + "/"
               remote_file_name = subjectmap_remotepath.split("/")[-1]
               sftp_instance.send_file_to_uri(subjectmap_URI, subjectmap_uname, \
                                   subjectmap_password, subjectmap_remote_directory, \
                                 remote_file_name, local_file_path, subjectmap_contact_email)
+
             elif action == 'email':
-              '''Send the subject_map_exceptions.csv to the contact
+                '''Send the subject_map_exceptions.csv to the contact
                 email address as an attachment
 
-              '''
-              print 'Sending '+local_file_path+' as email attachement to '\
-                                                      +subjectmap_contact_email
-              gsmlogger.logger.info('Sending %s as email attachement to %s', \
+                '''
+                print '\nSending file: [' + local_file_path + '] as email attachement to '\
+                    + subjectmap_contact_email
+                gsmlogger.logger.info('Sending %s as email attachement to %s', \
                                           local_file_path, subjectmap_contact_email)
-              # TODO change the mail body as required
-              mail_body = 'Hi, \n this mail contains attached exceptions.csv file.'
-              email_transactions().send_mail(setup['sender_email'], \
-                              subjectmap_contact_email, mail_body, [local_file_path])
-            else:
-              print 'Invalid option. either sftp/email should be used'
-              gsmlogger.logger.info('Invalid option. either sftp/email should be used')
+                # TODO change the mail body as required
+                mail_body = 'Hi, \n this mail contains attached exceptions.csv file.'
+                email_transactions().send_mail(setup['sender_email'], \
+                    subjectmap_contact_email, mail_body, [local_file_path])
+            else :
+                print 'Invalid option. either sftp/email should be used'
+                gsmlogger.logger.info('Invalid option. either sftp/email should be used')
     catalog.close()
     pass
 
@@ -297,36 +340,34 @@ def get_smi_and_parse(site_catalog_file):
             file_name = site_remotepath.split("/")[-1]
             site_localpath = configuration_directory+file_name
 
-            print 'Retrieving '+site_remotepath+' from '+site_URI
-            gsmlogger.logger.info('Retrieving %s from %s', \
-                                                    site_remotepath, site_URI)
-            print 'Any error will be reported to '+site_contact_email
-            gsmlogger.logger.info('Any error will be reported to %s', \
-                                                            site_contact_email)
+            info = 'Retrieving file: ' + site_remotepath + ' from ' + site_URI
+            print info
+            gsmlogger.logger.info(info)
+
+            info ='Errors will be reported to: ' + site_contact_email
+            print info
+            gsmlogger.logger.info(info)
+
             sftp_instance.get_file_from_uri(site_URI, site_uname, site_password, \
                       site_remotepath, site_localpath, site_contact_email)
     catalog.close()
     gsmlogger.logger.info("site catalog XML file closed.")
     return site_localpath
 
+
+'''
+Write ElementTree to a file
+    takes file_name as input
+'''
 def write_element_tree_to_file(element_tree, file_name):
-    '''function to write ElementTree to a file
-        takes file_name as input
-        Radha
-
-    '''
     gsmlogger.logger.debug('Writing ElementTree to %s', file_name)
-    element_tree.write(file_name, encoding="us-ascii", xml_declaration=True,
-            method="xml")
+    element_tree.write(file_name, encoding="us-ascii", xml_declaration=True,method="xml")
 
 
+'''
+Read the config data from setup.json
+'''
 def read_config(setup_json):
-    """function to read the config data from setup.json
-        Philip
-
-    """
-    import json
-
     try:
         json_data = open(setup_json)
     except IOError:
@@ -350,11 +391,45 @@ def read_config(setup_json):
         if item in setup:
             if (item == "system_log_file"):
                 if not os.path.exists(proj_root + setup[item]):
-                    raise GSMLogger().LogException("read_config: " + item + " file, '" + setup[item] + "', specified in " + setup_json + " does not exist")
+                    raise GSMLogger().LogException("read_config: " + item 
+                        + " file, '" + setup[item] + "', specified in " + setup_json + " does not exist")
             else:
                 if not os.path.exists(configuration_directory + setup[item]):
-                    raise GSMLogger().LogException("read_config: " + item + " file, '" + setup[item] + "', specified in " + setup_json + " does not exist")
+                    raise GSMLogger().LogException("read_config: " + item 
+                        + " file, '" + setup[item] + "', specified in " + setup_json + " does not exist")
     return setup
+
+
+
+'''
+Helper function for parsing undefined strings 
+'''
+def handle_blanks(s):
+    return '' if s is None else s.strip()
+
+
+'''
+Create a folder name with the following format:
+    ./out/out_YYYY_mm_dd:00:11:22
+'''
+def create_temp_dir_debug(existing_folder = './out') :
+    prefix = 'out_' + datetime.datetime.now().strftime('%Y_%m_%d-%H:%M:%S')
+    mydir = existing_folder + '/' + prefix
+    os.mkdir(mydir)
+    return mydir
+
+'''
+If do_keep_gen_files = True 
+    create a path like './out/out_YYYY_mm_dd:00:11:22'
+else
+    create a path using system provided location for a file 
+'''
+def get_temp_path(do_keep_gen_files) :
+    if do_keep_gen_files :
+        return create_temp_dir_debug() + '/'
+    else :
+        return tempfile.mkdtemp('/') 
+
 
 
 if __name__ == "__main__":
