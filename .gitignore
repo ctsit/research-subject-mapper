@@ -39,3 +39,7 @@ log/rsm.log
 
 rsm-devconfig/
 *.xml
+*.swp
+
+subject_map.csv
+subject_map_exceptions.csv
