@@ -26,6 +26,7 @@ import argparse
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
+default_configuration_directory = proj_root + "config/"
 sys.path.insert(0, proj_root+'bin/utils/')
 from sftp_transactions import sftp_transactions
 from email_transactions import email_transactions
@@ -38,11 +39,11 @@ def handle_blanks(s):
 def main():
 
     # obtaining command line arguments for path to config directory
-    parser = argparse.ArgumentParser(description='Read some data from a REDCap Project')
-    parser.add_argument('-c', dest='c', default='', required=False, help='Specify the path to the config directory')
+    parser = argparse.ArgumentParser(description='Setting path to configuration directory')
+    parser.add_argument('-c', dest='configuration_directory_path', default=default_configuration_directory, required=False, help='Specify the path to the configuration directory')
     args = vars(parser.parse_args())
     global configuration_directory
-    configuration_directory = args['c']
+    configuration_directory = args['configuration_directory_path']
 
     # Configure logging
     global gsmlogger
