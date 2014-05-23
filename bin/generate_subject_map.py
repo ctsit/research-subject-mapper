@@ -20,12 +20,12 @@ import httplib
 from urllib import urlencode
 import os
 import sys
+import argparse
 
 # This addresses the issues with relative paths
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
-configuration_directory = proj_root + "config/"
 sys.path.insert(0, proj_root+'bin/utils/')
 from sftp_transactions import sftp_transactions
 from email_transactions import email_transactions
@@ -36,6 +36,13 @@ def handle_blanks(s):
     return '' if s is None else s
 
 def main():
+
+    # obtaining command line arguments for path to config directory
+    parser = argparse.ArgumentParser(description='Read some data from a REDCap Project')
+    parser.add_argument('-c', dest='c', default='', required=False, help='Specify the path to the config directory')
+    args = vars(parser.parse_args())
+    global configuration_directory
+    configuration_directory = args['c']
 
     # Configure logging
     global gsmlogger
@@ -48,11 +55,13 @@ def main():
     site_catalog_file = configuration_directory+setup['site_catalog']
 
     # Initialize Redcap Interface
+    rt = redcap_transactions()
+    rt.configuration_directory = configuration_directory
 
-    properties = redcap_transactions().init_redcap_interface(setup,\
+    properties = rt.init_redcap_interface(setup,\
                      gsmlogger.logger)
     #gets data from the person index for the fields listed in the source_data_schema.xml
-    response = redcap_transactions().get_data_from_redcap(properties,\
+    response = rt.get_data_from_redcap(properties,\
                  gsmlogger.logger)
     xml_tree = etree.fromstring(response)
 
@@ -326,7 +335,6 @@ def read_config(setup_json):
 
     setup = json.load(json_data)
     json_data.close()
-
     # test for required parameters
     required_parameters = ['source_data_schema_file', 'site_catalog',
                     'system_log_file']
