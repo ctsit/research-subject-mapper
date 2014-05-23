@@ -20,11 +20,13 @@ import httplib
 from urllib import urlencode
 import os
 import sys
+import argparse
 
 # This addresses the issues with relative paths
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
+default_configuration_directory = proj_root + "config/"
 sys.path.insert(0, proj_root+'bin/utils/')
 from sftp_transactions import sftp_transactions
 from email_transactions import email_transactions
@@ -36,28 +38,37 @@ def handle_blanks(s):
 
 def main():
 
+    # obtaining command line arguments for path to config directory
+    parser = argparse.ArgumentParser(description='Setting path to configuration directory')
+    parser.add_argument('-c', dest='configuration_directory_path', default=default_configuration_directory, required=False, help='Specify the path to the configuration directory')
+    args = vars(parser.parse_args())
+    global configuration_directory
+    configuration_directory = args['configuration_directory_path']
+
     # Configure logging
     global gsmlogger
     gsmlogger = GSMLogger()
     gsmlogger.configure_logging()
 
-    setup_json = proj_root+'config/setup.json'
+    setup_json = configuration_directory + "setup.json"
     global setup
     setup = read_config(setup_json)
-    site_catalog_file = proj_root+setup['site_catalog']
+    site_catalog_file = configuration_directory+setup['site_catalog']
 
     # Initialize Redcap Interface
+    rt = redcap_transactions()
+    rt.configuration_directory = configuration_directory
 
-    properties = redcap_transactions().init_redcap_interface(setup,\
+    properties = rt.init_redcap_interface(setup,\
                      gsmlogger.logger)
     #gets data from the person index for the fields listed in the source_data_schema.xml
-    response = redcap_transactions().get_data_from_redcap(properties,\
+    response = rt.get_data_from_redcap(properties,\
                  gsmlogger.logger)
     xml_tree = etree.fromstring(response)
-    
+
     #XSL Transformation : transforms the person_index data
     transform_xsl = setup['person_index_transforma_xsl']
-    xslt = etree.parse(proj_root+transform_xsl)
+    xslt = etree.parse(configuration_directory+transform_xsl)
     transform = etree.XSLT(xslt)
     person_index_data = transform(xml_tree)
 
@@ -110,10 +121,10 @@ def main():
 
     #Below code transforms the xml files to csv files
     transform_xsl = setup['xml2csv_xsl']
-    xslt = etree.parse(proj_root+transform_xsl)
+    xslt = etree.parse(configuration_directory+transform_xsl)
     transform = etree.XSLT(xslt)
 
-    subject_map_file = proj_root+"subject_map.csv"
+    subject_map_file = configuration_directory+"subject_map.csv"
     try:
         subject_map_csv = open(subject_map_file, "w")
     except IOError:
@@ -143,7 +154,7 @@ def main():
 
     # send subject_map_exceptions.csv as email attachment
     if(exceptions):
-        subject_map_exception_file = proj_root+"subject_map_exceptions.csv"
+        subject_map_exception_file = configuration_directory+"subject_map_exceptions.csv"
         try:
             subject_map_exception_csv = open(subject_map_exception_file, "w")
         except IOError:
@@ -167,7 +178,7 @@ def parse_site_details_and_send(site_catalog_file, local_file_name, action):
 
     '''
     # local absolute path of the file to send
-    local_file_path = proj_root+local_file_name
+    local_file_path = configuration_directory+local_file_name
     if not os.path.exists(local_file_path):
         raise GSMLogger().LogException("Error: subject map file "+local_file_path+" file not found")
     if not os.path.exists(site_catalog_file):
@@ -284,7 +295,7 @@ def get_smi_and_parse(site_catalog_file):
             '''
             site_remotepath = site.findtext('site_remotepath')
             file_name = site_remotepath.split("/")[-1]
-            site_localpath = proj_root+file_name
+            site_localpath = configuration_directory+file_name
 
             print 'Retrieving '+site_remotepath+' from '+site_URI
             gsmlogger.logger.info('Retrieving %s from %s', \
@@ -325,7 +336,6 @@ def read_config(setup_json):
 
     setup = json.load(json_data)
     json_data.close()
-
     # test for required parameters
     required_parameters = ['source_data_schema_file', 'site_catalog',
                     'system_log_file']
@@ -338,10 +348,12 @@ def read_config(setup_json):
     files = ['source_data_schema_file', 'site_catalog', 'system_log_file']
     for item in files:
         if item in setup:
-            if not os.path.exists(proj_root + setup[item]):
-                raise GSMLogger().LogException("read_config: " + item + " file, '"
-                        + setup[item] + "', specified in "
-                        + setup_json + " does not exist")
+            if (item == "system_log_file"):
+                if not os.path.exists(proj_root + setup[item]):
+                    raise GSMLogger().LogException("read_config: " + item + " file, '" + setup[item] + "', specified in " + setup_json + " does not exist")
+            else:
+                if not os.path.exists(configuration_directory + setup[item]):
+                    raise GSMLogger().LogException("read_config: " + item + " file, '" + setup[item] + "', specified in " + setup_json + " does not exist")
     return setup
 
 
