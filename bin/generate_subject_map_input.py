@@ -22,50 +22,65 @@ import os
 import sys
 import datetime
 from datetime import date, timedelta
+import argparse
 
 # This addresses the issues with relative paths
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
+
 sys.path.insert(0, proj_root+'bin/utils/')
 from sftp_transactions import sftp_transactions
 from redcap_transactions import redcap_transactions
 from GSMLogger import GSMLogger
 
+# command line default argument value
+default_configuration_directory = proj_root + "config/"
+
 def main():
+
+    global configuration_directory
+
+    # obtaining command line arguments for path to config directory
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', dest='configuration_directory_path', default=default_configuration_directory, required=False, help='Specify the path to the configuration directory')
+    args = vars(parser.parse_args())
+    configuration_directory = args['configuration_directory_path']
 
     # Configure logging
     global gsmlogger
     gsmlogger = GSMLogger()
     gsmlogger.configure_logging()
 
-    setup_json = proj_root+'config/setup.json'
+    setup_json = configuration_directory+'setup.json'
     global setup
     setup = read_config(setup_json)
-    site_catalog_file = proj_root+setup['site_catalog']
+    site_catalog_file = configuration_directory+setup['site_catalog']
     # Initialize Redcap Interface
+    rt = redcap_transactions()
+    rt.configuration_directory = configuration_directory
 
-    properties = redcap_transactions().init_redcap_interface(setup, gsmlogger.logger)
+    properties = rt.init_redcap_interface(setup, gsmlogger.logger)
     transform_xsl = setup['xml_formatting_tranform_xsl']
     #get data from the redcap for the fields listed in the source_data_schema.xml
-    response = redcap_transactions().get_data_from_redcap(properties, gsmlogger.logger)
+    response = response = rt.get_data_from_redcap(properties, gsmlogger.logger)
 
     #XSL Transformation 1: This transformation removes junk data, rename elements and extracts site_id and adds new tag site_id
     xml_tree = etree.fromstring(response)
-    xslt = etree.parse(proj_root+transform_xsl)
+    xslt = etree.parse(configuration_directory+transform_xsl)
     transform = etree.XSLT(xslt)
     xml_transformed = transform(xml_tree)
     xml_str = etree.tostring(xml_transformed, method='xml', pretty_print=True)
 
     #XSL Transformation 2: This transformation groups the data based on site_id
     transform2_xsl = setup['groupby_siteid_transform_xsl']
-    xslt = etree.parse(proj_root+transform2_xsl)
+    xslt = etree.parse(configuration_directory+transform2_xsl)
     transform = etree.XSLT(xslt)
     xml_transformed2 = transform(xml_transformed)
 
     #XSL Transformation 3: This transformation removes all the nodes which are not set
     transform3_xsl = setup['remove_junktags_transform_xsl']
-    xslt = etree.parse(proj_root+transform3_xsl)
+    xslt = etree.parse(configuration_directory+transform3_xsl)
     transform = etree.XSLT(xslt)
     xml_transformed3 = transform(xml_transformed2)
 
@@ -170,10 +185,12 @@ def read_config(setup_json):
     files = ['source_data_schema_file', 'site_catalog', 'system_log_file']
     for item in files:
         if item in setup:
-            if not os.path.exists(proj_root + setup[item]):
-                raise GSMLogger().LogException("read_config: " + item + " file, '"
-                        + setup[item] + "', specified in "
-                        + setup_json + " does not exist")
+            if (item == "system_log_file"):
+                if not os.path.exists(proj_root + setup[item]):
+                    raise GSMLogger().LogException("read_config: " + item + " file, '" + setup[item] + "', specified in " + setup_json + " does not exist")
+            else:
+                if not os.path.exists(configuration_directory + setup[item]):
+                    raise GSMLogger().LogException("read_config: " + item + " file, '" + setup[item] + "', specified in " + setup_json + " does not exist")
     return setup
 
 
