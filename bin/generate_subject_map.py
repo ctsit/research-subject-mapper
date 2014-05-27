@@ -413,7 +413,7 @@ Create a folder name with the following format:
     ./out/out_YYYY_mm_dd:00:11:22
 '''
 def create_temp_dir_debug(existing_folder = './out') :
-    prefix = 'out_' + datetime.datetime.now().strftime('%Y_%m_%d-%H:%M:%S')
+    prefix = 'out_' + datetime.datetime.now().strftime('%Y_%m_%d-%H_%M_%S')
     mydir = existing_folder + '/' + prefix
     os.mkdir(mydir)
     return mydir
