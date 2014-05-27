@@ -5,13 +5,14 @@ generate_subject_map.py -  Tool to generate patient-to-research
 subject mapping files based on inputs from REDCap projects
 
 """
-# Version 0.1 2013-11-18
+
 __authors__ = "Mohan Das Katragadda"
 __copyright__ = "Copyright 2014, University of Florida"
 __license__ = "BSD 3-Clause"
 __version__ = "0.1"
 __email__ = "mohan88@ufl.edu"
 __status__ = "Development"
+
 from lxml import etree
 import xml.etree.ElementTree as ET
 import logging
@@ -21,11 +22,9 @@ import os
 import sys
 import json
 import argparse
-import contextlib
-import shutil
-import tempfile
-import datetime
 
+import datetime
+import gsm_lib
 
 # This addresses the issues with relative paths
 file_dir = os.path.dirname(os.path.realpath(__file__))
@@ -68,7 +67,7 @@ def main():
 
 
     args = vars(parser.parse_args())
-    configuration_directory = args['configuration_directory_path']
+    configuration_directory = args['configuration_directory_path'] + '/'
     do_keep_gen_files       = False if args['keep'] is None else True
 
     # Configure logging
@@ -76,25 +75,23 @@ def main():
     gsmlogger = GSMLogger()
     gsmlogger.configure_logging()
 
-    setup_json = configuration_directory + "setup.json"
+    #setup_json = configuration_directory + "\/setup.json"
     global setup
-    setup = read_config(setup_json)
+    setup = gsm_lib.read_config(configuration_directory, 'setup.json')
     site_catalog_file = configuration_directory+setup['site_catalog']
 
     # Initialize Redcap Interface
     rt = redcap_transactions()
     rt.configuration_directory = configuration_directory
 
-    properties = rt.init_redcap_interface(setup,\
-                     gsmlogger.logger)
+    properties = rt.init_redcap_interface(setup, gsmlogger.logger)
     #gets data from the person index for the fields listed in the source_data_schema.xml
-    response = rt.get_data_from_redcap(properties,\
-                 gsmlogger.logger)
+    response = rt.get_data_from_redcap(properties, gsmlogger.logger)
     xml_tree = etree.fromstring(response)
 
     #XSL Transformation : transforms the person_index data
-    transform_xsl = setup['person_index_transforma_xsl']
-    xslt = etree.parse(configuration_directory+transform_xsl)
+    transform_xsl = setup['person_index_transform_xsl']
+    xslt = etree.parse(configuration_directory + transform_xsl)
     transform = etree.XSLT(xslt)
     person_index_data = transform(xml_tree)
 
@@ -107,8 +104,8 @@ def main():
     #Below code merges the 2 xmls
     smi_data = etree.parse(smi_path)
     #sorting both the xml files.
-    sort_element_tree(smi_data)
-    sort_element_tree(person_index_data)
+    gsm_lib.sort_element_tree(smi_data)
+    gsm_lib.sort_element_tree(person_index_data)
     #generating the person index dictionary
     person_index_dict = {}
     for item in person_index_data.iter('item'):
@@ -150,7 +147,7 @@ def main():
     xslt = etree.parse(configuration_directory+transform_xsl)
     transform = etree.XSLT(xslt)
 
-    tmp_folder = get_temp_path(do_keep_gen_files) 
+    tmp_folder = gsm_lib.get_temp_path(do_keep_gen_files) 
     subject_map_file = tmp_folder + "subject_map.csv"
     gsmlogger.logger.info('Using path subject map file path: ' + subject_map_file)
 
@@ -160,11 +157,11 @@ def main():
 
         for item in subjectmap_root.iter("item"):
             line = '"{0}","{1}","{2}","{3}","{4}"\n'.format(\
-                handle_blanks(item.find("research_subject_id").text), \
-                handle_blanks(item.find("start_date").text),\
-                handle_blanks(item.find("end_date").text),\
-                handle_blanks(item.find("mrn").text),\
-                handle_blanks(item.find("facility_code").text))
+                gsm_lib.handle_blanks(item.find("research_subject_id").text), \
+                gsm_lib.handle_blanks(item.find("start_date").text),\
+                gsm_lib.handle_blanks(item.find("end_date").text),\
+                gsm_lib.handle_blanks(item.find("mrn").text),\
+                gsm_lib.handle_blanks(item.find("facility_code").text))
             subject_map_csv.write("%s"%line)
 
         subject_map_csv.close()
@@ -199,9 +196,9 @@ def main():
         subject_map_exceptions_csv.write("%s"%'"research_subject_id","person_index_yob","redcap_yob"\n')
         for item in subjectmap_exceptions_root.iter("item"):
             line = '"{0}","{1}","{2}"\n'.format(\
-                    handle_blanks(item.find("research_subject_id").text), \
-                    handle_blanks(item.find("Person_Index_YOB").text),\
-                    handle_blanks(item.find("HCVTarget_YOB").text))
+                    gsm_lib.handle_blanks(item.find("research_subject_id").text), \
+                    gsm_lib.handle_blanks(item.find("Person_Index_YOB").text),\
+                    gsm_lib.handle_blanks(item.find("HCVTarget_YOB").text))
             subject_map_exceptions_csv.write("%s"%line)
         subject_map_exceptions_csv.close()
 
@@ -213,13 +210,13 @@ def main():
             os.remove(subject_map_exceptions_file)
 
 
-
-
+'''
+Parse the site details from site catalog and 
+    send the subject map csv to the sftp server
+    OR
+    email the exceptions file
+'''
 def parse_site_details_and_send(site_catalog_file, local_file_path, action):
-    '''Function to parse the site details from site catalog and send
-    the subject map csv to the sftp server
-
-    '''
     if not os.path.exists(local_file_path):
         raise GSMLogger().LogException("Error: subject map file "+local_file_path+" file not found")
     if not os.path.exists(site_catalog_file):
@@ -281,32 +278,6 @@ def parse_site_details_and_send(site_catalog_file, local_file_path, action):
     catalog.close()
     pass
 
-def sort_element_tree(data):
-    """Sort element tree based on three given indices.
-
-    Keyword argument: data
-    sorting is based on study_id, form name, then timestamp, ascending order
-
-    """
-
-    # this element holds the subjects that are being sorted
-    container = data.getroot()
-    container[:] = sorted(container, key=getkey)
-
-def getkey(elem):
-    """Helper function for sorting. Returns keys to sort on.
-
-    Keyword argument: elem
-    returns the corresponding tuple study_id, form_name, timestamp
-
-    Nicholas
-
-    """
-    research_subject_id = elem.findtext("research_subject_id")
-    yob = elem.findtext("yob")
-    return (research_subject_id,yob)
-
-
 
 def get_smi_and_parse(site_catalog_file):
     '''Function to get the smi files from sftp server
@@ -353,82 +324,6 @@ def get_smi_and_parse(site_catalog_file):
     catalog.close()
     gsmlogger.logger.info("site catalog XML file closed.")
     return site_localpath
-
-
-'''
-Write ElementTree to a file
-    takes file_name as input
-'''
-def write_element_tree_to_file(element_tree, file_name):
-    gsmlogger.logger.debug('Writing ElementTree to %s', file_name)
-    element_tree.write(file_name, encoding="us-ascii", xml_declaration=True,method="xml")
-
-
-'''
-Read the config data from setup.json
-'''
-def read_config(setup_json):
-    try:
-        json_data = open(setup_json)
-    except IOError:
-        #raise logger.error
-        print "file " + setup_json + " could not be opened"
-        raise
-
-    setup = json.load(json_data)
-    json_data.close()
-    # test for required parameters
-    required_parameters = ['source_data_schema_file', 'site_catalog',
-                    'system_log_file']
-    for parameter in required_parameters:
-        if not parameter in setup:
-            raise GSMLogger().LogException("read_config: required parameter, "
-                + parameter  + "', is not set in " + setup_json)
-
-    # test for required files but only for the parameters that are set
-    files = ['source_data_schema_file', 'site_catalog', 'system_log_file']
-    for item in files:
-        if item in setup:
-            if (item == "system_log_file"):
-                if not os.path.exists(proj_root + setup[item]):
-                    raise GSMLogger().LogException("read_config: " + item 
-                        + " file, '" + setup[item] + "', specified in " + setup_json + " does not exist")
-            else:
-                if not os.path.exists(configuration_directory + setup[item]):
-                    raise GSMLogger().LogException("read_config: " + item 
-                        + " file, '" + setup[item] + "', specified in " + setup_json + " does not exist")
-    return setup
-
-
-
-'''
-Helper function for parsing undefined strings 
-'''
-def handle_blanks(s):
-    return '' if s is None else s.strip()
-
-
-'''
-Create a folder name with the following format:
-    ./out/out_YYYY_mm_dd:00:11:22
-'''
-def create_temp_dir_debug(existing_folder = './out') :
-    prefix = 'out_' + datetime.datetime.now().strftime('%Y_%m_%d-%H_%M_%S')
-    mydir = existing_folder + '/' + prefix
-    os.mkdir(mydir)
-    return mydir
-
-'''
-If do_keep_gen_files = True 
-    create a path like './out/out_YYYY_mm_dd:00:11:22'
-else
-    create a path using system provided location for a file 
-'''
-def get_temp_path(do_keep_gen_files) :
-    if do_keep_gen_files :
-        return create_temp_dir_debug() + '/'
-    else :
-        return tempfile.mkdtemp('/') 
 
 
 

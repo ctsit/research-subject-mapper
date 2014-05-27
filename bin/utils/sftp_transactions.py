@@ -31,6 +31,7 @@ class sftp_transactions:
         # make a connection with uri and credentials
         bridge = paramiko.Transport((site_URI, 22))
         bridge.connect(username = uname, password = password)
+        print ('Connected as %s@%s' % (uname, site_URI))
         connect = paramiko.SFTPClient.from_transport(bridge)
 
         # import here to eliminate circular dependancy
@@ -42,14 +43,11 @@ class sftp_transactions:
         try:
             # put the file at the designated location in the server
             connect.put(localpath, remotepath+file_name)
-            # close the connection
             connect.close()
         except Exception, e:
             # closing the connection incase there is any exception
             connect.close()
-            '''Report should be sent to the concerned authority with the error
-                message
-            '''
+            #Report should be sent to the concerned authority with the error message
             print 'Error sending file to '+site_URI
             print 'Check the credentials/remotepath/localpath/Server URI'
             email_transactions().send_mail('please-do-not-reply@ufl.edu', contact_email, str(e))

@@ -1,12 +1,12 @@
 {
     "project_name": "Generate Subject Map Input files for Project",
 
-    "site_catalog": "site-catalog.xml",
-    "source_data_schema_file": "source_data_schema.xml",
+    "site_catalog"                  : "site-catalog.xml",
+    "source_data_schema_file"       : "source_data_schema.xml",
+    
+    "system_log_file"               : "log/gsmi.log",
 
-    "system_log_file": "log/gsmi.log",
-
-    "xml_formatting_tranform_xsl": "xml_formatting_tranform.xsl",
-    "groupby_siteid_transform_xsl": "groupby_siteid_transform.xsl",
-    "remove_junktags_transform_xsl": "remove_junktags_transform.xsl"
+    "xml_formatting_tranform_xsl"   : "xml_formatting_tranform.xsl",
+    "groupby_siteid_transform_xsl"  : "groupby_siteid_transform.xsl",
+    "remove_junktags_transform_xsl" : "remove_junktags_transform.xsl"
 }
