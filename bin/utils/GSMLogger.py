@@ -16,39 +16,10 @@ class GSMLogger:
     def __init__(self):
         self.data = []
 
-    def create_log_directory(self, log_file_path, log_file_name):
-        try:
-            os.makedirs(log_file_path)
-            log_file = open(log_file_path + log_file_name, 'w+')
-        except OSError:
-            print "OSError"
 
-    def configure_logging(self, log_file_path, log_file_name):
-        '''Function to configure logging.
-
-            The log levels are defined below. Currently the log level is
-            set to DEBUG. All the logs in this level and above this level
-            are displayed. Depending on the maturity of the application
-            and release version these levels will be further
-            narrowed down to WARNING
-
-
-            Level       Numeric value
-            =========================
-            CRITICAL        50
-            ERROR           40
-            WARNING         30
-            INFO            20
-            DEBUG           10
-            NOTSET          0
-
-        '''
-
-
-        # configuring logger file and log format
-        # setting default log level to Debug
-
-        logging.basicConfig(filename=log_file_path+'/'+log_file_name,
+    '''Configure log level to: DEBUG'''
+    def configure_logging(self, log_file_path):
+        logging.basicConfig(filename=log_file_path,
                                 format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
                                 datefmt='%m/%d/%Y %H:%M:%S',
                                 filemode='w',

@@ -97,13 +97,15 @@ def read_config(configuration_directory, setup_json):
             if(item == 'system_log_file'):
                 file_path = proj_root + 'log/'
                 if not os.path.exists(file_path):
-                    GSMLogger().create_log_directory(file_path, setup[item])
+                    try:
+                        os.makedirs(file_path)
+                    except OSError:
+                        print "Unable to create folder: " + file_path
             else:
                 file_path = configuration_directory + setup[item]
-            file_path_alternative = setup[item]
 
-            if not os.path.exists(file_path) and not os.path.exists(file_path_alternative):
-                print 'Checked: ' + file_path
+            if not os.path.exists(file_path):
+                print 'Checking existence of file: ' + file_path
                 raise GSMLogger().LogException("read_config: " + item
                     + " file, '" + setup[item] + "', specified in " + conf_file + " does not exist")
     return setup

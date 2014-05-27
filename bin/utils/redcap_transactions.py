@@ -80,13 +80,11 @@ class redcap_transactions:
             redcap_connection = httplib.HTTPSConnection(properties['host'])
         else:
             redcap_connection = httplib.HTTPConnection(properties['host'])
-        logger.debug('getting data from path : %s', properties['path'])
         redcap_connection.request('POST', properties['path'], urlencode(params),
             {'Content-Type': 'application/x-www-form-urlencoded',
             'Accept': 'text/plain'})
         response_buffer = redcap_connection.getresponse()
         returned = response_buffer.read()
         logger.info('***********RESPONSE RECEIVED FROM REDCAP***********')
-        logger.debug(returned)
         redcap_connection.close()
         return returned
