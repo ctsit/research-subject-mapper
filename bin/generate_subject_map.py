@@ -70,15 +70,18 @@ def main():
     configuration_directory = args['configuration_directory_path'] + '/'
     do_keep_gen_files       = False if args['keep'] is None else True
 
-    # Configure logging
-    global gsmlogger
-    gsmlogger = GSMLogger()
-    gsmlogger.configure_logging()
-
     #setup_json = configuration_directory + "\/setup.json"
     global setup
     setup = gsm_lib.read_config(configuration_directory, 'setup.json')
     site_catalog_file = configuration_directory+setup['site_catalog']
+    system_log_file = setup['system_log_file']
+    print system_log_file
+
+    # Configure logging
+    global gsmlogger
+    log_file_path = proj_root + "log"
+    gsmlogger = GSMLogger()
+    gsmlogger.configure_logging(log_file_path, system_log_file)
 
     # Initialize Redcap Interface
     rt = redcap_transactions()
@@ -147,7 +150,7 @@ def main():
     xslt = etree.parse(configuration_directory+transform_xsl)
     transform = etree.XSLT(xslt)
 
-    tmp_folder = gsm_lib.get_temp_path(do_keep_gen_files) 
+    tmp_folder = gsm_lib.get_temp_path(do_keep_gen_files)
     subject_map_file = tmp_folder + "subject_map.csv"
     gsmlogger.logger.info('Using path subject map file path: ' + subject_map_file)
 
@@ -211,7 +214,7 @@ def main():
 
 
 '''
-Parse the site details from site catalog and 
+Parse the site details from site catalog and
     send the subject map csv to the sftp server
     OR
     email the exceptions file

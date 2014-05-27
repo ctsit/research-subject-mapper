@@ -12,11 +12,18 @@ class GSMLogger:
     """A class for handling logging"""
     # create logger
     logger = logging.getLogger('research_subject_mapper')
-    
+
     def __init__(self):
         self.data = []
-    
-    def configure_logging(self):
+
+    def create_log_directory(self, log_file_path, log_file_name):
+        try:
+            os.makedirs(log_file_path)
+            log_file = open(log_file_path + log_file_name, 'w+')
+        except OSError:
+            print "OSError"
+
+    def configure_logging(self, log_file_path, log_file_name):
         '''Function to configure logging.
 
             The log levels are defined below. Currently the log level is
@@ -24,7 +31,7 @@ class GSMLogger:
             are displayed. Depending on the maturity of the application
             and release version these levels will be further
             narrowed down to WARNING
-        
+
 
             Level       Numeric value
             =========================
@@ -36,16 +43,17 @@ class GSMLogger:
             NOTSET          0
 
         '''
-        
-        
+
+
         # configuring logger file and log format
         # setting default log level to Debug
-        logging.basicConfig(filename=proj_root+'log/rsm.log',
-                            format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
-                            datefmt='%m/%d/%Y %H:%M:%S',
-                            filemode='w',
-                            level=logging.DEBUG)
-    
+
+        logging.basicConfig(filename=log_file_path+'/'+log_file_name,
+                                format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
+                                datefmt='%m/%d/%Y %H:%M:%S',
+                                filemode='w',
+                                level=logging.DEBUG)
+
     class LogException(Exception):
         '''Class to log the exception
         logs the exception at an error level
@@ -57,4 +65,3 @@ class GSMLogger:
             # print self.val
             GSMLogger().logger.error(self.val)
             return repr(self.val)
-
