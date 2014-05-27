@@ -71,6 +71,11 @@ Read the config data from setup.json
 '''
 def read_config(configuration_directory, setup_json):
     conf_file = configuration_directory + setup_json
+
+    # check if the path is valid
+    if not os.path.exists(conf_file):
+        raise GSMLogger().LogException("Invalid path specified for conf file: " + setup_json)
+
     try:
         json_data = open(conf_file)
     except IOError:
