@@ -26,7 +26,7 @@ class redcap_transactions:
         host = ''
         path = ''
         source_data_schema_file = ''
-        source_data_schema_file = self.configuration_directory + setup['source_data_schema_file']
+        source_data_schema_file = self.configuration_directory + '/' + setup['source_data_schema_file']
 
         if not os.path.exists(source_data_schema_file):
             raise Exception("Error: source_data_schema.xml file not found at\
