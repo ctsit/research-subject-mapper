@@ -31,11 +31,11 @@ import gsm_lib
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
+
 sys.path.insert(0, proj_root+'bin/utils/')
 from sftp_transactions import sftp_transactions
 from redcap_transactions import redcap_transactions
 from GSMLogger import GSMLogger
-
 
 # Command line default argument values
 default_configuration_directory = proj_root + "config/"
@@ -65,7 +65,6 @@ def main():
     args = vars(parser.parse_args())
     configuration_directory = args['configuration_directory_path'] + '/'
     do_keep_gen_files       = False if args['keep'] is None else True
-
 
     # Configure logging
     global gsmlogger
@@ -197,7 +196,6 @@ def parse_site_details_and_send(site_catalog_file, smi_filenames, smi_ids):
     catalog.close()
     gsmlogger.logger.info("site catalog XML file closed.")
     pass
-
 
 
 if __name__ == "__main__":
