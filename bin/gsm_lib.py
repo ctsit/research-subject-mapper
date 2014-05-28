@@ -96,7 +96,7 @@ def read_config(configuration_directory, setup_json):
                 + parameter  + "', is not set in " + conf_file)
 
     # test for required files but only for the parameters that are set
-    files = ['source_data_schema_file', 'site_catalog', 'system_log_file']
+    files = ['source_data_schema_file', 'site_catalog']
     for item in files:
         if item in setup:
             if(item == 'system_log_file'):

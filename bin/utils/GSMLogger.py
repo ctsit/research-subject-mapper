@@ -16,14 +16,42 @@ class GSMLogger:
     def __init__(self):
         self.data = []
 
+    def configure_logging(self,log_file_path):
+        '''Function to configure logging.
 
-    '''Configure log level to: DEBUG'''
-    def configure_logging(self, log_file_path):
+            The log levels are defined below. Currently the log level is
+            set to DEBUG. All the logs in this level and above this level
+            are displayed. Depending on the maturity of the application
+            and release version these levels will be further
+            narrowed down to WARNING
+
+
+            Level       Numeric value
+            =========================
+            CRITICAL        50
+            ERROR           40
+            WARNING         30
+            INFO            20
+            DEBUG           10
+            NOTSET          0
+
+        '''
+        if(log_file_path == ""):
+            raise GSMLogger().LogException("No path specified for log file in the configuration file")
+        last_slash = log_file_path.rfind('/')
+        path_without_file = log_file_path[:last_slash]
+        if not os.path.exists(path_without_file):
+            try:
+                os.makedirs(path_without_file)
+            except:
+                raise LogException("Log file cannot be created at the path "+path_without_file)
+        # configuring logger file and log format
+        # setting default log level to Debug
         logging.basicConfig(filename=log_file_path,
-                                format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
-                                datefmt='%m/%d/%Y %H:%M:%S',
-                                filemode='w',
-                                level=logging.DEBUG)
+                            format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
+                            datefmt='%m/%d/%Y %H:%M:%S',
+                            filemode='w',
+                            level=logging.DEBUG)
 
     class LogException(Exception):
         '''Class to log the exception
