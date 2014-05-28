@@ -78,9 +78,8 @@ def main():
 
     # Configure logging
     global gsmlogger
-    log_file_path = proj_root + "log/" + system_log_file
     gsmlogger = GSMLogger()
-    gsmlogger.configure_logging(log_file_path)
+    gsmlogger.configure_logging(system_log_file)
 
     # Initialize Redcap Interface
     rt = redcap_transactions()
