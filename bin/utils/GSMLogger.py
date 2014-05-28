@@ -16,7 +16,7 @@ class GSMLogger:
     def __init__(self):
         self.data = []
     
-    def configure_logging(self):
+    def configure_logging(self,log_file_path):
         '''Function to configure logging.
 
             The log levels are defined below. Currently the log level is
@@ -36,11 +36,16 @@ class GSMLogger:
             NOTSET          0
 
         '''
-        
-        
+        last_slash = log_file_path.rfind('/')
+        path_without_file = log_file_path[:last_slash]
+        if not os.path.exists(path_without_file):
+            try:
+                os.makedirs(path_without_file)
+            except:
+                raise LogException("Log file cannot be created at the path "+path_without_file)
         # configuring logger file and log format
         # setting default log level to Debug
-        logging.basicConfig(filename=proj_root+'log/rsm.log',
+        logging.basicConfig(filename=log_file_path,
                             format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
                             datefmt='%m/%d/%Y %H:%M:%S',
                             filemode='w',

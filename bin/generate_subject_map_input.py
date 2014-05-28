@@ -65,16 +65,17 @@ def main():
     args = vars(parser.parse_args())
     configuration_directory = args['configuration_directory_path'] + '/'
     do_keep_gen_files       = False if args['keep'] is None else True
-
-    # Configure logging
-    global gsmlogger
-    gsmlogger = GSMLogger()
-    gsmlogger.configure_logging()
-
+    
     #setup_json = configuration_directory + 'setup.json'
     global setup
     setup = gsm_lib.read_config(configuration_directory, 'setup.json')
     site_catalog_file = configuration_directory + setup['site_catalog']
+    system_log_file = setup['system_log_file']
+
+    # Configure logging
+    global gsmlogger
+    gsmlogger = GSMLogger()
+    gsmlogger.configure_logging(system_log_file)
 
     # Initialize Redcap Interface
     rt = redcap_transactions()
