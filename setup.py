@@ -1,12 +1,11 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='Research Subject Mapper',
     version='0.7.1',
     author='Christopher P Barnes, Philip Chase, Nicolas Rejack',
     author_email='cpb@ufl.edu, pbc@ufl.edu, nrejack@ufl.edu',
-    packages=['bin'],
-    scripts=['bin/generate_subject_map_input.py', 'bin/generate_subject_map.py'],
+    packages=find_packages(),
     url='',
     license='BSD 3-Clause',
     description='A suite of tools to curate and manage the people identifiers in a multi-site clinical research project.',
