@@ -158,11 +158,11 @@ def main():
 
         for item in subjectmap_root.iter("item"):
             line = '"{0}","{1}","{2}","{3}","{4}"\n'.format(\
-                gsm_lib.handle_blanks(item.find("research_subject_id").text), \
-                gsm_lib.handle_blanks(item.find("start_date").text),\
-                gsm_lib.handle_blanks(item.find("end_date").text),\
-                gsm_lib.handle_blanks(item.find("mrn").text),\
-                gsm_lib.handle_blanks(item.find("facility_code").text))
+                gsm_lib.handle_blanks(item.findtext("research_subject_id")), \
+                gsm_lib.handle_blanks(item.findtext("start_date")),\
+                gsm_lib.handle_blanks(item.findtext("end_date")),\
+                gsm_lib.handle_blanks(item.findtext("mrn")),\
+                gsm_lib.handle_blanks(item.findtext("facility_code")))
             subject_map_csv.write("%s"%line)
 
         subject_map_csv.close()
