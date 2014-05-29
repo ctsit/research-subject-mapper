@@ -65,7 +65,7 @@ def main():
     args = vars(parser.parse_args())
     configuration_directory = args['configuration_directory_path'] + '/'
     do_keep_gen_files       = False if args['keep'] is None else True
-    
+
     #setup_json = configuration_directory + 'setup.json'
     global setup
     setup = gsm_lib.read_config(configuration_directory, 'setup.json')
@@ -109,7 +109,7 @@ def main():
     xml_str2 = etree.tostring(xml_transformed3, method='xml', pretty_print=True)
     tree = etree.fromstring(xml_str2, etree.XMLParser(remove_blank_text=True))
 
-    # Loop through the start_date elements and update theur values 
+    # Loop through the start_date elements and update theur values
     for k in tree.iter('start_date'):
         d = datetime.datetime.strptime(k.text, "%Y-%m-%d").date()-timedelta(days=180)
         k.text = str(d)
@@ -117,7 +117,7 @@ def main():
     #writing data to smi+site_id.xml. This xml will be saved to sftp of the site as smi.xml
     smi_filenames = []
     smi_ids = []
-    tmp_folder = gsm_lib.get_temp_path(do_keep_gen_files) 
+    tmp_folder = gsm_lib.get_temp_path(do_keep_gen_files)
 
     for k in tree:
         file_name = tmp_folder + 'smi' + k.attrib['id']+'.xml'
@@ -182,7 +182,7 @@ def parse_site_details_and_send(site_catalog_file, smi_filenames, smi_ids):
                     site_remotepath, 'smi.xml', site_localpath, site_contact_email)
 
 
-            if do_keep_gen_files: 
+            if do_keep_gen_files:
                 print ' * Keeping the temporary file: ' + site_localpath
             else :
                 # remove the smi.xml from the folder

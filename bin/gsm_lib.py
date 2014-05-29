@@ -71,6 +71,11 @@ Read the config data from setup.json
 '''
 def read_config(configuration_directory, setup_json):
     conf_file = configuration_directory + setup_json
+
+    # check if the path is valid
+    if not os.path.exists(conf_file):
+        raise GSMLogger().LogException("Invalid path specified for conf file: " + setup_json)
+
     try:
         json_data = open(conf_file)
     except IOError:
@@ -94,19 +99,26 @@ def read_config(configuration_directory, setup_json):
     files = ['source_data_schema_file', 'site_catalog']
     for item in files:
         if item in setup:
-            file_path = configuration_directory + setup[item]
-            file_path_alternative = setup[item]
+            if(item == 'system_log_file'):
+                file_path = proj_root + 'log/'
+                if not os.path.exists(file_path):
+                    try:
+                        os.makedirs(file_path)
+                    except OSError:
+                        print "Unable to create folder: " + file_path
+            else:
+                file_path = configuration_directory + setup[item]
 
-            if not os.path.exists(file_path) and not os.path.exists(file_path_alternative):
-                print 'Checked: ' + file_path
-                raise GSMLogger().LogException("read_config: " + item 
+            if not os.path.exists(file_path):
+                print 'Checking existence of file: ' + file_path
+                raise GSMLogger().LogException("read_config: " + item
                     + " file, '" + setup[item] + "', specified in " + conf_file + " does not exist")
     return setup
 
 
 
 '''
-Helper function for parsing undefined strings 
+Helper function for parsing undefined strings
 '''
 def handle_blanks(s):
     return '' if s is None else s.strip()
@@ -123,16 +135,13 @@ def create_temp_dir_debug(existing_folder = './out') :
     return mydir
 
 '''
-If do_keep_gen_files = True 
+If do_keep_gen_files = True
     create a path like './out/out_YYYY_mm_dd:00:11:22'
 else
-    create a path using system provided location for a file 
+    create a path using system provided location for a file
 '''
 def get_temp_path(do_keep_gen_files) :
     if do_keep_gen_files :
         return create_temp_dir_debug() + '/'
     else :
-        return tempfile.mkdtemp('/') 
-
-
-
+        return tempfile.mkdtemp('/')

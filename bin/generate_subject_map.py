@@ -70,15 +70,16 @@ def main():
     configuration_directory = args['configuration_directory_path'] + '/'
     do_keep_gen_files       = False if args['keep'] is None else True
 
-    # Configure logging
-    global gsmlogger
-    gsmlogger = GSMLogger()
-    gsmlogger.configure_logging()
-
-    #setup_json = configuration_directory + "\/setup.json"
+    # read setup options
     global setup
     setup = gsm_lib.read_config(configuration_directory, 'setup.json')
     site_catalog_file = configuration_directory+setup['site_catalog']
+    system_log_file = setup['system_log_file']
+
+    # Configure logging
+    global gsmlogger
+    gsmlogger = GSMLogger()
+    gsmlogger.configure_logging(system_log_file)
 
     # Initialize Redcap Interface
     rt = redcap_transactions()
@@ -147,7 +148,7 @@ def main():
     xslt = etree.parse(configuration_directory+transform_xsl)
     transform = etree.XSLT(xslt)
 
-    tmp_folder = gsm_lib.get_temp_path(do_keep_gen_files) 
+    tmp_folder = gsm_lib.get_temp_path(do_keep_gen_files)
     subject_map_file = tmp_folder + "subject_map.csv"
     gsmlogger.logger.info('Using path subject map file path: ' + subject_map_file)
 
@@ -157,11 +158,11 @@ def main():
 
         for item in subjectmap_root.iter("item"):
             line = '"{0}","{1}","{2}","{3}","{4}"\n'.format(\
-                gsm_lib.handle_blanks(item.find("research_subject_id").text), \
-                gsm_lib.handle_blanks(item.find("start_date").text),\
-                gsm_lib.handle_blanks(item.find("end_date").text),\
-                gsm_lib.handle_blanks(item.find("mrn").text),\
-                gsm_lib.handle_blanks(item.find("facility_code").text))
+                gsm_lib.handle_blanks(item.findtext("research_subject_id")), \
+                gsm_lib.handle_blanks(item.findtext("start_date")),\
+                gsm_lib.handle_blanks(item.findtext("end_date")),\
+                gsm_lib.handle_blanks(item.findtext("mrn")),\
+                gsm_lib.handle_blanks(item.findtext("facility_code")))
             subject_map_csv.write("%s"%line)
 
         subject_map_csv.close()
@@ -211,7 +212,7 @@ def main():
 
 
 '''
-Parse the site details from site catalog and 
+Parse the site details from site catalog and
     send the subject map csv to the sftp server
     OR
     email the exceptions file

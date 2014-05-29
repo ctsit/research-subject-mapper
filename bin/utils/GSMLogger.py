@@ -12,10 +12,10 @@ class GSMLogger:
     """A class for handling logging"""
     # create logger
     logger = logging.getLogger('research_subject_mapper')
-    
+
     def __init__(self):
         self.data = []
-    
+
     def configure_logging(self,log_file_path):
         '''Function to configure logging.
 
@@ -24,7 +24,7 @@ class GSMLogger:
             are displayed. Depending on the maturity of the application
             and release version these levels will be further
             narrowed down to WARNING
-        
+
 
             Level       Numeric value
             =========================
@@ -36,6 +36,8 @@ class GSMLogger:
             NOTSET          0
 
         '''
+        if(log_file_path == ""):
+            raise GSMLogger().LogException("No path specified for log file in the configuration file")
         last_slash = log_file_path.rfind('/')
         path_without_file = log_file_path[:last_slash]
         if not os.path.exists(path_without_file):
@@ -50,7 +52,7 @@ class GSMLogger:
                             datefmt='%m/%d/%Y %H:%M:%S',
                             filemode='w',
                             level=logging.DEBUG)
-    
+
     class LogException(Exception):
         '''Class to log the exception
         logs the exception at an error level
@@ -62,4 +64,3 @@ class GSMLogger:
             # print self.val
             GSMLogger().logger.error(self.val)
             return repr(self.val)
-

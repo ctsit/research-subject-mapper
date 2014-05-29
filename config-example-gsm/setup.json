@@ -1,16 +1,16 @@
 {
-    "project_name": "generate subject map",
+    "project_name"                  : "generate subject map",
 
-    "site_catalog": "site-catalog.xml",
-    "source_data_schema_file": "source_data_schema.xml",
+    "site_catalog"                  : "site-catalog.xml",
+    "source_data_schema_file"       : "source_data_schema.xml",
 
-    "smtp_host_for_outbound_mail": "smtp.destination_site.edu",
-    "system_log_file": "log/gsm.log",
+    "smtp_host_for_outbound_mail"   : "smtp.destination_site.edu",
+    "system_log_file"               : "gsm.log",
 
-    "sender_email":"please-do-not-reply@destination_site.edu",
-    "send_email":"Y",
-    "receiver_email":["contact@destination_site.edu"],
+    "sender_email"                  : "please-do-not-reply@destination_site.edu",
+    "send_email"                    : "Y",
+    "receiver_email"                : ["contact@destination_site.edu"],
 
-    "person_index_transforma_xsl": "person_index_transform.xsl",
-    "xml2csv_xsl": "xml2csv.xsl"
+    "person_index_transform_xsl"    : "person_index_transform.xsl",
+    "xml2csv_xsl"                   : "xml2csv.xsl"
 }
