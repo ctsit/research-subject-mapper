@@ -4,9 +4,14 @@
 # Create a source distribution
 #	https://docs.python.org/2/distutils/sourcedist.html
 #	https://docs.python.org/2/distutils/setupscript.html
-dist:
-	#python setup.py bdist --format=gztar
-	python setup.py sdist --format=gztar,zip
+egg:
+	python setup.py bdist_egg
+
+bdist:
+	python setup.py bdist
+
+sdist:
+	python setup.py sdist
 
 test_gsm:
 	echo 'Executing bin/generate_subject_map.py ...'
