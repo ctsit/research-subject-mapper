@@ -91,8 +91,8 @@ def main():
     xml_tree = etree.fromstring(response)
 
     #XSL Transformation : transforms the person_index data
-    transform_xsl = setup['person_index_transform_xsl']
-    xslt = etree.parse(configuration_directory + transform_xsl)
+    transform_xsl = proj_root + "bin/utils/person_index_transform.xsl"
+    xslt = etree.parse(transform_xsl)
     transform = etree.XSLT(xslt)
     person_index_data = transform(xml_tree)
 
@@ -144,8 +144,8 @@ def main():
                 subjectmap_exceptions_root.append(exception_item)
 
     #Below code transforms the xml files to csv files
-    transform_xsl = setup['xml2csv_xsl']
-    xslt = etree.parse(configuration_directory+transform_xsl)
+    transform_xsl = proj_root + "bin/utils/xml2csv.xsl"
+    xslt = etree.parse(transform_xsl)
     transform = etree.XSLT(xslt)
 
     tmp_folder = gsm_lib.get_temp_path(do_keep_gen_files)
