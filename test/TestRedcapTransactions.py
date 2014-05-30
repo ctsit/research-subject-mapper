@@ -44,7 +44,8 @@ class TestRedcapTransactions(unittest.TestCase):
         self.f.close()
 
         # create smi files
-        self.smi_filenames = ['555', '666']
+        self.smi_filenames = ['smi555.xml', 'smi666.xml']
+        self.smi_ids = ['555', '666']
         f1 = open(proj_root+'smi555.xml', 'w')
         f1.write('Test file 1')
         f1.close()
@@ -71,8 +72,8 @@ class TestRedcapTransactions(unittest.TestCase):
         self.assertEqual(properties['token'],'TOKENTOKENTOKENTOKENTOKENTOKEN' )
         self.assertEqual(properties['fields'],'test_field1,test_field2,test_field3' )
         self.assertEqual(properties['is_secure'],False )
-        generate_subject_map_input.parse_site_details_and_send(self.setup['source_data_schema_file'], self.smi_filenames,logger)
-        
+        generate_subject_map_input.parse_site_details_and_send(self.setup['source_data_schema_file'], self.smi_filenames, self.smi_ids, gsmlogger)
+
         returned = redcap_obj.get_data_from_redcap(properties,logger)
         # checking for the response from the server started with the expected
         # data from user side
@@ -86,7 +87,7 @@ class TestRedcapTransactions(unittest.TestCase):
         #except OSError:
         #  pass
         return()
-        
+
     #@all_requests
     def response_content(self, environ, start_response):
         response_body = 'OK'
