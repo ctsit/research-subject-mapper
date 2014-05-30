@@ -20,11 +20,13 @@ import thread
 from GSMLogger import GSMLogger
 from redcap_transactions import redcap_transactions
 import generate_subject_map_input
+import tempfile
 
 class TestRedcapTransactions(unittest.TestCase):
 
     def setUp(self):
         # create test setup
+        self.configuration_directory = tempfile.mkdtemp()
         self.setup = {'source_data_schema_file': 'test_source_data_schema.xml'}
         # create test source data schema
         source_data_schema_content = '''<?xml version='1.0' encoding='US-ASCII'?>
@@ -37,7 +39,7 @@ class TestRedcapTransactions(unittest.TestCase):
             <field>test_field3</field>
           </fields>
         </source>'''
-        self.f = open('test_source_data_schema.xml', 'w')
+        self.f = open(self.configuration_directory + '/test_source_data_schema.xml', 'w')
         self.f.write(source_data_schema_content)
         self.f.close()
 
@@ -56,10 +58,12 @@ class TestRedcapTransactions(unittest.TestCase):
         # Configure logging
         global gsmlogger
         gsmlogger = GSMLogger()
-        gsmlogger.configure_logging()
+        self.logFile = tempfile.mkstemp()[1]
+        print self.logFile
+        gsmlogger.configure_logging(self.logFile)
         logger = gsmlogger.logger
         redcap_obj = redcap_transactions()
-
+        redcap_obj.configuration_directory = self.configuration_directory
         # init redcap interface
         properties = redcap_obj.init_redcap_interface(self.setup, logger)
         self.assertEqual(properties['path'],'/' )
