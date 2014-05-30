@@ -5,7 +5,7 @@
     "source_data_schema_file"       : "source_data_schema.xml",
 
     "smtp_host_for_outbound_mail"   : "smtp.destination_site.edu",
-    "system_log_file"               : "log/gsm.log",
+    "system_log_file"               : "/full-path-to-log-file/gsm.log",
 
     "sender_email"                  : "please-do-not-reply@destination_site.edu",
     "send_email"                    : "Y",
