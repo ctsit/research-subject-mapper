@@ -82,26 +82,26 @@ def main():
     rt.configuration_directory = configuration_directory
 
     properties = rt.init_redcap_interface(setup, gsmlogger.logger)
-    transform_xsl = setup['xml_formatting_tranform_xsl']
+    transform_xsl = proj_root + 'bin/utils/xml_formatting_tranform.xsl'
     #get data from the redcap for the fields listed in the source_data_schema.xml
     response = rt.get_data_from_redcap(properties, gsmlogger.logger)
 
     #XSL Transformation 1: This transformation removes junk data, rename elements and extracts site_id and adds new tag site_id
     xml_tree = etree.fromstring(response)
-    xslt = etree.parse(configuration_directory + transform_xsl)
+    xslt = etree.parse(transform_xsl)
     transform = etree.XSLT(xslt)
     xml_transformed = transform(xml_tree)
     xml_str = etree.tostring(xml_transformed, method='xml', pretty_print=True)
 
     #XSL Transformation 2: This transformation groups the data based on site_id
-    transform2_xsl = setup['groupby_siteid_transform_xsl']
-    xslt = etree.parse(configuration_directory + transform2_xsl)
+    transform2_xsl = proj_root + 'bin/utils/groupby_siteid_transform.xsl'
+    xslt = etree.parse(transform2_xsl)
     transform = etree.XSLT(xslt)
     xml_transformed2 = transform(xml_transformed)
 
     #XSL Transformation 3: This transformation removes all the nodes which are not set
-    transform3_xsl = setup['remove_junktags_transform_xsl']
-    xslt = etree.parse(configuration_directory + transform3_xsl)
+    transform3_xsl = proj_root + 'bin/utils/remove_junktags_transform.xsl'
+    xslt = etree.parse(transform3_xsl)
     transform = etree.XSLT(xslt)
     xml_transformed3 = transform(xml_transformed2)
 
