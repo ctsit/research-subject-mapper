@@ -36,10 +36,15 @@ class GSMLogger:
             NOTSET          0
 
         '''
+
+        # make sure the log directory exists
         if(log_file_path == ""):
             raise GSMLogger().LogException("No path specified for log file in the configuration file")
         last_slash = log_file_path.rfind('/')
-        path_without_file = log_file_path[:last_slash]
+        if last_slash == ValueError: 
+            path_without_file = "./"
+        else:
+            path_without_file = log_file_path[:last_slash]
         if not os.path.exists(path_without_file):
             try:
                 os.makedirs(path_without_file)
