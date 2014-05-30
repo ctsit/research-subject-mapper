@@ -15,6 +15,7 @@ class redcap_transactions:
     """A class for getting data from redcap instace"""
     def __init__(self):
         self.data = []
+        self.configuration_directory = ''
 
     def init_redcap_interface(self,setup,logger):
         '''This function initializes the variables requrired to get data from redcap
@@ -25,7 +26,7 @@ class redcap_transactions:
         host = ''
         path = ''
         source_data_schema_file = ''
-        source_data_schema_file = proj_root + setup['source_data_schema_file']
+        source_data_schema_file = self.configuration_directory + '/' + setup['source_data_schema_file']
 
         if not os.path.exists(source_data_schema_file):
             raise Exception("Error: source_data_schema.xml file not found at\
@@ -79,13 +80,11 @@ class redcap_transactions:
             redcap_connection = httplib.HTTPSConnection(properties['host'])
         else:
             redcap_connection = httplib.HTTPConnection(properties['host'])
-        logger.debug('getting data from path : %s', properties['path'])
         redcap_connection.request('POST', properties['path'], urlencode(params),
             {'Content-Type': 'application/x-www-form-urlencoded',
             'Accept': 'text/plain'})
         response_buffer = redcap_connection.getresponse()
         returned = response_buffer.read()
         logger.info('***********RESPONSE RECEIVED FROM REDCAP***********')
-        logger.debug(returned)
         redcap_connection.close()
         return returned

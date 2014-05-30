@@ -1,3 +1,12 @@
+2014-05-30 v0.8.0
+
+ * Add a configurable path to the configuration directory
+ * Allow log file location to be configurable
+ * Use temporary folders for temporary files
+ * Add python packaging support
+ * Move static data files out of the config folder
+ * Add documentation for creating research subject mapping manually
+
  2014-05-15 v0.7.1
 
  * Summary: Fix column order in subjectMap.csv output
