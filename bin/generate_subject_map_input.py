@@ -81,7 +81,7 @@ def main():
     rt.configuration_directory = configuration_directory
 
     properties = rt.init_redcap_interface(setup, gsmlogger.logger)
-    transform_xsl = proj_root + 'bin/utils/xml_formatting_tranform.xsl'
+    transform_xsl = configuration_directory + setup['xml_formatting_tranform_xsl']
     #get data from the redcap for the fields listed in the source_data_schema.xml
     response = rt.get_data_from_redcap(properties, gsmlogger.logger)
 

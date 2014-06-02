@@ -33,7 +33,7 @@
     </xsl:template>
     
     
-        <!-- copy start dates -->
+<!-- copy start dates -->
      <xsl:template match="dm_rfstdtc">
        <start_date>
         <xsl:value-of select="." />
