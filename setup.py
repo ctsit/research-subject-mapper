@@ -17,7 +17,10 @@ setup(
     author_email='cpb@ufl.edu, pbc@ufl.edu, nrejack@ufl.edu',
     packages=find_packages(),
     include_package_data=True,
-    package_data={'bin': ['utils/*.xsl'],'research-subject-mapper':['README.md']},
+    package_data={'bin': ['utils/*.xsl'],'config-example-gsm': ['*'],'config-example-gsm-input': ['*']},
+    data_files={
+            'README.md'
+        },
     url='http://it.ctsi.ufl.edu/about/',
     license='BSD 3-Clause',
     description='A suite of tools to curate and manage the people identifiers in a multi-site clinical research project.',
