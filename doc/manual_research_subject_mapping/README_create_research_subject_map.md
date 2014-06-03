@@ -21,7 +21,7 @@ Format the data following these guidelines:
 The fields in the file are:
 
 1. "research_subject_id" is the subject number for the patient 
-2. "start_date" and "end_date" must be formatted YYYY-MM-DD. This specifies the date range to pull records, according to your protocol. 
+2. "start_date" and "end_date" must be formatted YYYY-MM-DD. This specifies the date range to pull records, according to your protocol. start_date is consent date minus 180 days, end_date is the end of treatment plus 180 days.
 3. "mrn" is the medical record number in the local EHR. 
 4. "facility_code"" is an optional code that corresponds to a hospital in the EHR. 
 
