@@ -4,7 +4,7 @@ Research Subject Mapper is a tool designed to serve the needs of multi-center st
 
 ## Working with research-subject-mapper executable(egg file):
 ### Requirements:
-To successfully run the Research Subject Mapper tool on the target machine please install below softwares before going any further.
+To successfully run the Research Subject Mapper tool on the target machine please install the software below before going any further.
 #### Install Python:
 Run ```sudo apt-get install python2.7``` on target machine
 #### Install below python packages
