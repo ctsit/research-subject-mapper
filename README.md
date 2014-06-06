@@ -28,7 +28,7 @@ Check for config-example-gsm and config-example-gsm-input directories in the rsm
 #### Input Requirements:
 1) Person Index fields needs to specified in the source_data_schema.xml before running gsm
 
-2) If this tool is being run on the central site you need to run `gsmi` tool as shown below and put generated files in the ftp of the site.
+2) If this tool is being run on the central site you need to run `gsmi` tool as shown below and put generated files in the ftp of the site. Client sites typically only need to run the generate_subject_mapper tool.
 
 ##### To generate input at the central site location
 Run `gsmi -c <FULL_PATH_TO_CONFIG_DIRECTORY> -k <YES_OR_NO_TO_KEEP_GENERATED_FILES>` (if a directory named config is already setup in the parent directory of generate_subject_map_input.py, one need not provide the path to config directory in -c option)
