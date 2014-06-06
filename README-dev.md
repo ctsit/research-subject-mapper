@@ -8,7 +8,7 @@ Source code can be downloaded from [here](ctsit.github.io/research-subject-mappe
 Source code can also be cloned using command `git clone https://github.com/ctsit/research-subject-mapper.git`. Research Subject Mapper source code is now available for usage on the target machine. 
 
 ### Requirements:
-To successfully run the Research Subject Mapper tool on the target machine please install below softwares before going any further.
+To successfully run the Research Subject Mapper tool on the target machine please install the software below before going any further.
 #### Install Python:
 Run ```sudo apt-get install python2.7``` on target machine
 #### Install below python packages
