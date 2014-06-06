@@ -26,7 +26,7 @@ Check for config-example-gsm and config-example-gsm-input directories in the rsm
 
 ### Running the generate_subject_mapper tools
 #### Input Requirements:
-1) Person Index fields needs to specified in the source_data_schema.xml before running gsm
+1) Edit the source_data_schema.xml file to specify the Person Index fields before running gsm. You will need to specify the study subject number, a field to verify the study subject (typically year of birth), and the subject's corresponding MRN.
 
 2) If this tool is being run on the central site you need to run `gsmi` tool as shown below and put generated files in the ftp of the site. Client sites typically only need to run the generate_subject_mapper tool.
 
