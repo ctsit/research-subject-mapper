@@ -58,7 +58,7 @@ Steps to use generate_subject_map.py:
 All files and input parameters required to run generate_subject_map.py can be found in the config-example-gsm folder.
 
 
-1) Setup a config directory on the tagret machine 
+1) Setup a config directory on the target machine 
 
 2) Add files to config directory with your implementation specific details (for example: site details, sftp credentials, source_data details.For more detailed examples please refer files in config-example-gsm).
 
