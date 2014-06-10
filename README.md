@@ -24,6 +24,40 @@ To install research subject mapper run *sudo easy_install rsm_X.X.X.egg* where X
 ###Configuration setup:
 Check for config-example-gsm and config-example-gsm-input directories in the rsm installation directory on the target machine and prepare custom config directories with your implementations on the target machine.
 
+#### Files Description:
+The files that need to be modified with your implementation details in config directory are `site-catalog.xml` and `source_data_schema.xml`.
+
+##### site-catalog.xml
+This xml file follows below structure
+
+```
+<sites_list>
+	<site>
+        <site_name>source</site_name>
+        <site_URI>sftp.source_site.edu</site_URI>
+        <site_uname>source_user</site_uname>
+        <site_password>source_password</site_password>
+        <site_remotepath>ftp/smi.xml</site_remotepath>
+        <site_contact_email>contact@source_site.edu</site_contact_email>
+    </site>
+</sites_list>
+```
+
+##### source_data_schema.xml
+This xml file follows below structure
+
+```
+<source>
+	<redcap_uri>Your_RedCap_Instance_URI</redcap_uri>
+	<apitoken>API_TOKEN</apitoken>
+	<fields>
+		<field>Field_Name</field>
+		<field>Field_Name</field>
+		<field>Field_Name</field>
+	</fields>
+</source>
+```
+
 ### Running the generate_subject_mapper tools
 #### Input Requirements:
 1) Edit the source_data_schema.xml file to specify the Person Index fields before running gsm. You will need to specify the study subject number, a field to verify the study subject (typically year of birth), and the subject's corresponding MRN.
