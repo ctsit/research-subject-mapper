@@ -158,6 +158,18 @@ a.button span {
 #download-tar-gz span {
   background: transparent url(../images/tar-gz-icon.png) 12px 50% no-repeat;
 }
+
+a.wide {
+   margin-top: 5px;
+   margin-left: 180px;
+   width: 230px;
+}
+
+#download-exe span {
+  background: transparent url(../images/exe-icon.png) 12px 50% no-repeat;
+}
+
+
 #view-on-github span {
   background: transparent url(../images/octocat-icon.png) 12px 50% no-repeat;
 }
