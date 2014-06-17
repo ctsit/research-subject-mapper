@@ -30,12 +30,11 @@ import gsm_lib
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
-sys.path.insert(0, proj_root+'bin/utils/')
 
-from sftp_transactions import sftp_transactions
-from email_transactions import email_transactions
-from redcap_transactions import redcap_transactions
-from GSMLogger import GSMLogger
+from utils.sftp_transactions import sftp_transactions
+from utils.email_transactions import email_transactions
+from utils.redcap_transactions import redcap_transactions
+from utils.GSMLogger import GSMLogger
 
 # Command line default argument values
 default_configuration_directory = proj_root + "config/"
@@ -228,37 +227,43 @@ def parse_site_details_and_send(site_catalog_file, local_file_path, action):
     site_data = etree.parse(site_catalog_file)
     site_num = len(site_data.findall(".//site"))
     gsmlogger.logger.info(str(site_num) + " total subject site entries read into tree.")
-    sftp_instance = sftp_transactions()
 
     for site in site_data.iter('site'):
         site_name = site.findtext('site_name')
         if site_name == 'destination':
-            subjectmap_URI = site.findtext('site_URI')
+            host, port = gsm_lib.parse_host_and_port(site.findtext('site_URI'))
             subjectmap_uname = site.findtext('site_uname')
             subjectmap_password = site.findtext('site_password')
+            subjectmap_key_path = site.findtext('site_key_path')
             subjectmap_contact_email = site.findtext('site_contact_email')
             # is it a file transfer or attachment email?
             if action == 'sftp':
-              '''Pick up the subject_map.csv and put it in the specified
-              sftp server's remote path
+                '''Pick up the subject_map.csv and put it in the specified
+                sftp server's remote path
 
-              '''
-              # remote path to send the file to
-              subjectmap_remotepath = site.findtext('site_remotepath')
-              info = '\nSending file [' + local_file_path + '] to ' + subjectmap_URI + ':' + subjectmap_remotepath
-              print info
-              gsmlogger.logger.info(info)
+                '''
+                # remote path to send the file to
+                subjectmap_remotepath = site.findtext('site_remotepath')
+                info = '\nSending file [' + local_file_path + '] to ' + host + ':' + subjectmap_remotepath
+                print info
+                gsmlogger.logger.info(info)
 
-              info = 'Errors will be reported to: ' + subjectmap_contact_email
-              print info
-              gsmlogger.logger.info(info)
+                info = 'Errors will be reported to: ' + subjectmap_contact_email
+                print info
+                gsmlogger.logger.info(info)
 
-              # put the subject map csv file
-              subjectmap_remote_directory = subjectmap_remotepath.rsplit("/", 1)[0] + "/"
-              remote_file_name = subjectmap_remotepath.split("/")[-1]
-              sftp_instance.send_file_to_uri(subjectmap_URI, subjectmap_uname, \
-                                  subjectmap_password, subjectmap_remote_directory, \
-                                remote_file_name, local_file_path, subjectmap_contact_email)
+                # put the subject map csv file
+                subjectmap_remote_directory = subjectmap_remotepath.rsplit("/", 1)[0] + "/"
+                remote_file_name = subjectmap_remotepath.split("/")[-1]
+
+                sftp_instance = sftp_transactions(host, port,
+                                                  subjectmap_uname,
+                                                  subjectmap_password,
+                                                  subjectmap_key_path)
+                sftp_instance.send_file_to_uri(subjectmap_remote_directory,
+                                               remote_file_name,
+                                               local_file_path,
+                                               subjectmap_contact_email)
 
             elif action == 'email':
                 '''Send the subject_map_exceptions.csv to the contact
@@ -292,7 +297,6 @@ def get_smi_and_parse(site_catalog_file):
     site_data = etree.parse(site_catalog_file)
     site_num = len(site_data.findall(".//site"))
     gsmlogger.logger.info(str(site_num) + " total subject site entries read into tree.")
-    sftp_instance = sftp_transactions()
     '''The reference site code is the current site on which
     generate_subject_map.py is running.
     As we need to get the only smi from the sftp to this site.
@@ -301,9 +305,10 @@ def get_smi_and_parse(site_catalog_file):
     for site in site_data.iter('site'):
         site_name = site.findtext('site_name')
         if site_name == 'source':
-            site_URI = site.findtext('site_URI')
+            host, port = gsm_lib.parse_host_and_port(site.findtext('site_URI'))
             site_uname = site.findtext('site_uname')
             site_password = site.findtext('site_password')
+            site_key_path = site.findtext('site_key_path')
             site_contact_email = site.findtext('site_contact_email')
             '''Pick up the smi file from the server and place it in the proj_root
 
@@ -312,7 +317,7 @@ def get_smi_and_parse(site_catalog_file):
             file_name = site_remotepath.split("/")[-1]
             site_localpath = configuration_directory+file_name
 
-            info = 'Retrieving file: ' + site_remotepath + ' from ' + site_URI
+            info = 'Retrieving file: ' + site_remotepath + ' from ' + host
             print info
             gsmlogger.logger.info(info)
 
@@ -320,8 +325,10 @@ def get_smi_and_parse(site_catalog_file):
             print info
             gsmlogger.logger.info(info)
 
-            sftp_instance.get_file_from_uri(site_URI, site_uname, site_password, \
-                      site_remotepath, site_localpath, site_contact_email)
+            sftp_instance = sftp_transactions(host, port, site_uname,
+                                              site_password, site_key_path)
+            sftp_instance.get_file_from_uri(site_remotepath, site_localpath,
+                                            site_contact_email)
     catalog.close()
     gsmlogger.logger.info("site catalog XML file closed.")
     return site_localpath

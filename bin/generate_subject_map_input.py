@@ -158,7 +158,6 @@ def parse_site_details_and_send(site_catalog_file, smi_filenames, smi_ids, gsmlo
             site_key_path = site.findtext('site_key_path')
             site_password = site.findtext('site_password')
             site_contact_email = site.findtext('site_contact_email')
-            sftp_instance = sftp_transactions(host, port, site_uname, password=site_password, private_key=site_key_path)
 
             '''Pick up the correct smi file with the code and place in the destination
             as smi.xml at the specified remote path
@@ -175,6 +174,8 @@ def parse_site_details_and_send(site_catalog_file, smi_filenames, smi_ids, gsmlo
             info = 'Any error will be reported to '+site_contact_email
             print info
             gsmlogger.logger.info(info)
+
+            sftp_instance = sftp_transactions(host, port, site_uname, password=site_password, private_key=site_key_path)
             sftp_instance.send_file_to_uri(site_remotepath, 'smi.xml', site_localpath, site_contact_email)
 
             if do_keep_gen_files:
