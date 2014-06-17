@@ -31,7 +31,7 @@ file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
 
-from utils.sftp_transactions import sftp_transactions
+from utils.sftpclient import SFTPClient
 from utils.email_transactions import email_transactions
 from utils.redcap_transactions import redcap_transactions
 from utils.GSMLogger import GSMLogger
@@ -256,10 +256,10 @@ def parse_site_details_and_send(site_catalog_file, local_file_path, action):
                 subjectmap_remote_directory = subjectmap_remotepath.rsplit("/", 1)[0] + "/"
                 remote_file_name = subjectmap_remotepath.split("/")[-1]
 
-                sftp_instance = sftp_transactions(host, port,
-                                                  subjectmap_uname,
-                                                  subjectmap_password,
-                                                  subjectmap_key_path)
+                sftp_instance = SFTPClient(host, port,
+                                           subjectmap_uname,
+                                           subjectmap_password,
+                                           subjectmap_key_path)
                 sftp_instance.send_file_to_uri(subjectmap_remote_directory,
                                                remote_file_name,
                                                local_file_path,
@@ -325,8 +325,8 @@ def get_smi_and_parse(site_catalog_file):
             print info
             gsmlogger.logger.info(info)
 
-            sftp_instance = sftp_transactions(host, port, site_uname,
-                                              site_password, site_key_path)
+            sftp_instance = SFTPClient(host, port, site_uname, site_password,
+                                       site_key_path)
             sftp_instance.get_file_from_uri(site_remotepath, site_localpath,
                                             site_contact_email)
     catalog.close()

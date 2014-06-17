@@ -27,10 +27,8 @@ import shutil
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
-sys.path.insert(0, proj_root+'bin/utils/')
-from sftp_transactions import sftp_transactions
-from redcap_transactions import redcap_transactions
-from GSMLogger import GSMLogger
+
+from utils.GSMLogger import GSMLogger
 
 
 '''

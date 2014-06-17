@@ -32,7 +32,7 @@ file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
 
-from utils.sftp_transactions import sftp_transactions
+from utils.sftpclient import SFTPClient
 from utils.redcap_transactions import redcap_transactions
 from utils.GSMLogger import GSMLogger
 
@@ -175,8 +175,10 @@ def parse_site_details_and_send(site_catalog_file, smi_filenames, smi_ids, gsmlo
             print info
             gsmlogger.logger.info(info)
 
-            sftp_instance = sftp_transactions(host, port, site_uname, password=site_password, private_key=site_key_path)
-            sftp_instance.send_file_to_uri(site_remotepath, 'smi.xml', site_localpath, site_contact_email)
+            sftp_instance = SFTPClient(host, port, site_uname, site_password,
+                                       private_key=site_key_path)
+            sftp_instance.send_file_to_uri(site_remotepath, 'smi.xml',
+                                           site_localpath, site_contact_email)
 
             if do_keep_gen_files:
                 print ' * Keeping the temporary file: ' + site_localpath

@@ -3,7 +3,7 @@ import pysftp
 from email_transactions import email_transactions
 
 
-class sftp_transactions:
+class SFTPClient:
     """A class for handling the sftp transactions. This class contains
     functions for getting a file from sftp server and putting a file
     to a sftp server"""

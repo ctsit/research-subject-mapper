@@ -4,17 +4,17 @@ import os
 import contextlib
 import tempfile
 from unittest import TestCase
-from bin.utils.sftp_transactions import sftp_transactions
+from bin.utils.sftpclient import SFTPClient
 
 
-class sftp_transactionsTests(TestCase):
+class SFTPClientTests(TestCase):
     def test_put_with_password(self):
         server = 'localhost'
         port = 2222
         username = 'vagrant'
         password = 'vagrant'
 
-        sftp = sftp_transactions(server, port, username, password)
+        sftp = SFTPClient(server, port, username, password)
         local_path = os.path.realpath(__file__)
         remote_path = os.path.basename(__file__)
         sftp.put(local_path, remote_path)
@@ -25,14 +25,14 @@ class sftp_transactionsTests(TestCase):
         username = 'vagrant'
         password = 'vagrant'
 
-        sftp = sftp_transactions(server, port, username, password)
+        sftp = SFTPClient(server, port, username, password)
         local_path = os.path.realpath(__file__)
         remote_path = './tmp/subtmp/' + os.path.basename(__file__)
         sftp.put(local_path, remote_path)
 
     def test_get(self):
         with temporary_file() as temp_filename:
-            sftp = sftp_transactions('localhost', port=2222,
+            sftp = SFTPClient('localhost', port=2222,
                                      username='vagrant', password='vagrant')
             sftp.get_file_from_uri(remotepath='/vagrant/Vagrantfile',
                                    localpath=temp_filename,
@@ -46,7 +46,7 @@ class sftp_transactionsTests(TestCase):
         key_path = 'id_rsa'
 
         with temporary_key(filename=key_path):
-            sftp = sftp_transactions(server, port, username, private_key=key_path)
+            sftp = SFTPClient(server, port, username, private_key=key_path)
             sftp.put(os.path.realpath(__file__), os.path.basename(__file__))
 
 @contextlib.contextmanager
