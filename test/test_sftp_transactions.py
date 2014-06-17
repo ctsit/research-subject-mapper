@@ -2,6 +2,7 @@ __author__ = 'Taeber Rapczak <taeber@ufl.edu>'
 
 import os
 import contextlib
+import tempfile
 from unittest import TestCase
 from bin.utils.sftp_transactions import sftp_transactions
 
@@ -29,7 +30,16 @@ class sftp_transactionsTests(TestCase):
         remote_path = './tmp/subtmp/' + os.path.basename(__file__)
         sftp.put(local_path, remote_path)
 
-    def test_put_with_key_auth(self):
+    def test_get(self):
+        with temporary_file() as temp_filename:
+            sftp = sftp_transactions('localhost', port=2222,
+                                     username='vagrant', password='vagrant')
+            sftp.get_file_from_uri(remotepath='/vagrant/Vagrantfile',
+                                   localpath=temp_filename,
+                                   contact_email=None)
+            self.assertFalse(os.stat(temp_filename)[6] == 0)
+
+    def test_key_based_auth(self):
         server = 'localhost'
         port = 2222
         username = 'vagrant'
@@ -38,6 +48,12 @@ class sftp_transactionsTests(TestCase):
         with temporary_key(filename=key_path):
             sftp = sftp_transactions(server, port, username, private_key=key_path)
             sftp.put(os.path.realpath(__file__), os.path.basename(__file__))
+
+@contextlib.contextmanager
+def temporary_file():
+    filename = tempfile.NamedTemporaryFile(delete=False).name
+    yield filename
+    os.remove(filename)
 
 @contextlib.contextmanager
 def temporary_key(filename):
@@ -74,4 +90,4 @@ NE5OgEXk2wVfZczCZpigBKbKZHNYcelXtTt/nP3rsCuGcM4h53s=
         fp.write(vagrant_insecure_private_key)
 
     yield
-    os.unlink(filename)
+    os.remove(filename)
