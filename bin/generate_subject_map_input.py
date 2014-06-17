@@ -153,7 +153,7 @@ def parse_site_details_and_send(site_catalog_file, smi_filenames, smi_ids, gsmlo
     for site in site_data.iter('site'):
         site_code = site.findtext('site_code')
         if site_code in smi_ids:
-            host, port = parse_host_and_port(site.findtext('site_URI'))
+            host, port = gsm_lib.parse_host_and_port(site.findtext('site_URI'))
             site_uname = site.findtext('site_uname')
             site_key_path = site.findtext('site_key_path')
             site_password = site.findtext('site_password')
@@ -193,13 +193,6 @@ def parse_site_details_and_send(site_catalog_file, smi_filenames, smi_ids, gsmlo
     gsmlogger.logger.info("site catalog XML file closed.")
     pass
 
-
-def parse_host_and_port(uri):
-    host_and_port = uri.split(':')
-    if len(host_and_port) == 2:
-        return host_and_port
-
-    return uri, None
 
 if __name__ == "__main__":
     main()

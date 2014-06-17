@@ -145,3 +145,12 @@ def get_temp_path(do_keep_gen_files) :
         return create_temp_dir_debug() + '/'
     else :
         return tempfile.mkdtemp('/')
+
+
+def parse_host_and_port(raw):
+    """Returns a tuple comprising hostname and port number from raw text"""
+    host_and_port = raw.split(':')
+    if len(host_and_port) == 2:
+        return host_and_port
+    else:
+        return raw, None
