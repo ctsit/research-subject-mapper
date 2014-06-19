@@ -21,6 +21,9 @@ test_gsmi:
 	echo 'Executing bin/generate_subject_map_input.py ...'
 	python bin/generate_subject_map_input.py -c gsmi_config -k yes
 
+tests:
+	PYTHONPATH=. python -munittest discover test
+
 help:
 	echo 'Available tasks: dist, clean, test_gsm, test_gsmi'
 
