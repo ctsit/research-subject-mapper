@@ -1,6 +1,9 @@
 # Common tasks helper
 # @author: Andrei Sura
 
+help:
+	echo 'Available tasks: egg, bdist, sdist, test_gsm, test_gsmi, coverage, clean'
+
 # Create a source distribution
 #	https://docs.python.org/2/distutils/sourcedist.html
 #	https://docs.python.org/2/distutils/setupscript.html
@@ -13,6 +16,14 @@ bdist:
 sdist:
 	python setup.py sdist
 
+compile:
+	python -m compileall bin
+	python -m compileall test
+
+test: tests
+tests:
+	python test/TestSuite.py
+
 test_gsm:
 	echo 'Executing bin/generate_subject_map.py ...'
 	python bin/generate_subject_map.py -c gsm_config -k yes
@@ -21,8 +32,12 @@ test_gsmi:
 	echo 'Executing bin/generate_subject_map_input.py ...'
 	python bin/generate_subject_map_input.py -c gsmi_config -k yes
 
-help:
-	echo 'Available tasks: dist, clean, test_gsm, test_gsmi'
+coverage:
+	which figleaf || sudo easy_install figleaf
+	figleaf test/TestSuite.py
+	figleaf2html -d coverage .figleaf
+	ls coverage/index.html
+
 
 clean:
 	rm -rf log/rsm.log

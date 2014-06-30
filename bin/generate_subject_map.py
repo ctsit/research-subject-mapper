@@ -212,6 +212,24 @@ def main():
 
 
 '''
+    @return a dictionary representation of a site from xml tree
+'''
+def get_site_details_as_dict(file_path, site_type):
+    data = {}
+    if not os.path.exists(file_path):
+        raise GSMLogger().LogException("Error: xml file not found at: " + file_path)
+
+    sites_list = etree.parse(file_path)
+    site = sites_list.xpath("(/sites_list/site[@type='" + site_type + "'])[1]")[0]
+    data['site_URI']            = site.findtext('site_URI').strip()
+    data['site_uname']          = site.findtext('site_uname').strip()
+    data['site_password']       = site.findtext('site_password').strip()
+    data['site_contact_email']  = site.findtext('site_contact_email').strip()
+    return data
+
+
+
+'''
 Parse the site details from site catalog and
     send the subject map csv to the sftp server
     OR

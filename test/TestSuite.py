@@ -17,7 +17,10 @@ import unittest
 '''
 from lxml import etree
 # from TestLog import TestLog
+from TestParseSiteDetails import TestParseSiteDetails
 from TestReadConfig import TestReadConfig
+
+
 class rsm_suite(unittest.TestSuite):
 
     def suite(self):
@@ -25,6 +28,7 @@ class rsm_suite(unittest.TestSuite):
         rsm_test_suite = unittest.TestSuite()
         
         # add the test to the suite in the order to be tested
+        redi_test_suite.addTest(TestParseSiteDetails)
         # rsm_test_suite.addTest(TestLog)
         redi_test_suite.addTest(TestReadConfig)
         
