@@ -27,9 +27,8 @@ import shutil
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
+
 sys.path.insert(0, proj_root+'bin/utils/')
-from sftp_transactions import sftp_transactions
-from redcap_transactions import redcap_transactions
 from GSMLogger import GSMLogger
 
 
@@ -145,3 +144,12 @@ def get_temp_path(do_keep_gen_files) :
         return create_temp_dir_debug() + '/'
     else :
         return tempfile.mkdtemp('/')
+
+
+def parse_host_and_port(raw):
+    """Returns a tuple comprising hostname and port number from raw text"""
+    host_and_port = raw.split(':')
+    if len(host_and_port) == 2:
+        return host_and_port
+    else:
+        return raw, None

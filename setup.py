@@ -12,8 +12,8 @@ from setuptools import setup, find_packages
 
 setup(
     name='rsm',
-    version='0.8.0',
-    author='Christopher P Barnes, Philip Chase, Nicolas Rejack',
+    version='0.9.0',
+    author='Christopher P Barnes, Philip Chase, Nicholas Rejack',
     author_email='cpb@ufl.edu, pbc@ufl.edu, nrejack@ufl.edu',
     packages=find_packages(),
     include_package_data=True,

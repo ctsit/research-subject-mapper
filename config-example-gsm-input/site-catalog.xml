@@ -24,4 +24,22 @@
 		<site_remotepath>/path/to/file</site_remotepath>
 		<site_contact_email>temp@yetanotherexample.edu</site_contact_email>
 	</site>
+	<!--
+	 SFTP Key-based Authentication
+
+	 When using key-based authentication, you should not supply a password
+	 (omit the "site_password").
+
+	 Research Subject Mapper will attempt to use the user's private key. If the
+	 key is in a non-standard location, you can specify the path using
+	 "site_key_path" like so:
+	-->
+	<site>
+		<site_code>444</site_code>
+		<site_URI>sftp.yetanotherexample.edu:50022</site_URI>
+		<site_uname>test_name</site_uname>
+		<site_key_path>/home/user123/.ssh/id_rsa-alternate-location.key</site_key_path>
+		<site_remotepath>/path/to/file</site_remotepath>
+		<site_contact_email>temp@yetanotherexample.edu</site_contact_email>
+	</site>
 </sites_list>

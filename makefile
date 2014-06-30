@@ -20,9 +20,6 @@ compile:
 	python -m compileall bin
 	python -m compileall test
 
-test: tests
-tests:
-	python test/TestSuite.py
 
 test_gsm:
 	echo 'Executing bin/generate_subject_map.py ...'
@@ -38,6 +35,8 @@ coverage:
 	figleaf2html -d coverage .figleaf
 	ls coverage/index.html
 
+tests:
+	PYTHONPATH=. python -munittest discover test
 
 clean:
 	rm -rf log/rsm.log
