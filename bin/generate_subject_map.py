@@ -20,7 +20,6 @@ import httplib
 from urllib import urlencode
 import os
 import sys
-import json
 import argparse
 
 import datetime
