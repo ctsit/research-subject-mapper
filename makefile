@@ -9,6 +9,7 @@ help:
 	@echo "\t test_gsm   - run the gsm application (expects the config folder 'gsm_config')"
 	@echo "\t test_gsmi  - run the gsmi application (expects the config folder 'gsmi_config')"
 	@echo "\t coverage   - run figleaf application to generate statistics on code coverage"
+	@echo "\t test       - run unit tests"
 	@echo "\t clean      - remove generated files"
 
 # Create a source distribution
@@ -29,12 +30,12 @@ compile:
 
 
 test_gsm:
-	test -d gsm_config || $(error "Please create the 'gsm_config' folder first")
+	@test -d gsm_config || echo "Please create the 'gsm_config' folder first"
 	@echo "Executing bin/generate_subject_map.py ..."
 	python bin/generate_subject_map.py -c gsm_config -k yes
 
 test_gsmi:
-	test -d gsmi_config || $(error "Please create the 'gsmi_config' folder first")
+	@test -d gsmi_config || echo "Please create the 'gsmi_config' folder first"
 	@echo 'Executing bin/generate_subject_map_input.py ...'
 	python bin/generate_subject_map_input.py -c gsmi_config -k yes
 
@@ -44,12 +45,15 @@ coverage:
 	figleaf2html -d coverage .figleaf
 	ls coverage/index.html
 
+test: tests
 tests:
 	PYTHONPATH=. python -munittest discover test
+	python test/TestSuite.py
 
 clean:
-	rm -rf log/rsm.log
-	rm -rf out/*
+	rm -rf log/gsm.log
+	rm -rf log/gsmi.log
+	rm -rf out_*
 	rm -rf dist
 	rm -rf build
 	rm -rf rsm.egg-info
