@@ -14,7 +14,6 @@ __version__     = "0.1"
 __email__       = ""
 __status__      = "Development"
 
-import json
 import pprint
 import os
 import sys
