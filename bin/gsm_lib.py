@@ -141,15 +141,20 @@ else
 '''
 def get_temp_path(do_keep_gen_files) :
     if do_keep_gen_files :
-        return create_temp_dir_debug() + '/'
+        return create_temp_dir_debug('.') + '/'
     else :
         return tempfile.mkdtemp('/')
 
 
-def parse_host_and_port(raw):
-    """Returns a tuple comprising hostname and port number from raw text"""
-    host_and_port = raw.split(':')
-    if len(host_and_port) == 2:
+"""
+    Returns a tuple comprising hostname and port number from raw text
+    Example:
+        From raw: sftp.example.com:1234
+        Return  : [sftp.example.com, 1234]
+"""
+def parse_host_and_port(raw) :
+    host_and_port = raw.split(':', 2)
+    if (2 == len(host_and_port)) :
         return host_and_port
-    else:
-        return raw, None
+
+    return raw, None

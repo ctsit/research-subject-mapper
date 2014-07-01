@@ -223,6 +223,7 @@ def get_site_details_as_dict(file_path, site_type):
     data['site_URI']            = site.findtext('site_URI').strip()
     data['site_uname']          = site.findtext('site_uname').strip()
     data['site_password']       = site.findtext('site_password').strip()
+    data['site_remotepath']     = site.findtext('site_remotepath').strip()
     data['site_contact_email']  = site.findtext('site_contact_email').strip()
     return data
 
@@ -322,15 +323,23 @@ def get_smi_and_parse(site_catalog_file):
     '''
     for site in site_data.iter('site'):
         site_name = site.findtext('site_name')
+
         if site_name == 'source':
+            site_uri = site.findtext('site_URI')
+
             host, port = gsm_lib.parse_host_and_port(site.findtext('site_URI'))
+            if not port :
+                port = 22
+                info = 'The SFTP uri does not contain a port. Default to port 22'
+                print info
+                gsmlogger.logger.warn(info)
+
             site_uname = site.findtext('site_uname')
             site_password = site.findtext('site_password')
             site_key_path = site.findtext('site_key_path')
             site_contact_email = site.findtext('site_contact_email')
-            '''Pick up the smi file from the server and place it in the proj_root
 
-            '''
+            # Pick up the smi file from the server and place it in the proj_root
             site_remotepath = site.findtext('site_remotepath')
             file_name = site_remotepath.split("/")[-1]
             site_localpath = configuration_directory+file_name

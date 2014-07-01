@@ -21,7 +21,7 @@ class TestParseSiteDetails(unittest.TestCase):
         <site_URI>          source_sftp             </site_URI>
         <site_uname>        source_tester           </site_uname>
         <site_password>     source_pass             </site_password>
-        <site_remotepath>   /tmp/smi.xml            </site_remotepath>
+        <site_remotepath>   smi.xml                 </site_remotepath>
         <site_contact_email>jdoe@example.com        </site_contact_email>
     </site>
 
@@ -29,7 +29,7 @@ class TestParseSiteDetails(unittest.TestCase):
         <site_URI>          dest_sftp               </site_URI>
         <site_uname>        dest_tester             </site_uname>
         <site_password>     dest_pass               </site_password>
-        <site_remotepath>   /tmp/smi.xml            </site_remotepath>
+        <site_remotepath>   smi.xml                 </site_remotepath>
         <site_contact_email>jdoe@example.com        </site_contact_email>
     </site>
 </sites_list>
@@ -49,12 +49,14 @@ class TestParseSiteDetails(unittest.TestCase):
             'site_URI'              : 'source_sftp',
             'site_contact_email'    : 'jdoe@example.com',
             'site_password'         : 'source_pass',
+            'site_remotepath'       : 'smi.xml',
             'site_uname'            : 'source_tester'}
 
         good_dikt_dest = {
             'site_URI'              : 'dest_sftp',
             'site_contact_email'    : 'jdoe@example.com',
             'site_password'         : 'dest_pass',
+            'site_remotepath'       : 'smi.xml',
             'site_uname'            : 'dest_tester'}
 
 
