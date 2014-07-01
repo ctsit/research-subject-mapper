@@ -36,6 +36,7 @@ sys.path.insert(0, proj_root+'bin/utils/')
 from sftp_transactions import sftp_transactions
 from redcap_transactions import redcap_transactions
 from GSMLogger import GSMLogger
+import SimpleConfigParser
 
 # Command line default argument values
 default_configuration_directory = proj_root + "config/"
@@ -65,11 +66,12 @@ def main():
     configuration_directory = args['configuration_directory_path'] + '/'
     do_keep_gen_files       = False if args['keep'] is None else True
 
-    #setup_json = configuration_directory + 'setup.json'
-    global setup
-    setup = gsm_lib.read_config(configuration_directory, 'setup.json')
-    site_catalog_file = configuration_directory + setup['site_catalog']
-    system_log_file = setup['system_log_file']
+    settings = SimpleConfigParser.SimpleConfigParser()
+    settings.read(configuration_directory + 'settings.ini')
+    settings.set_attributes()
+    gsm_lib.read_config(configuration_directory, 'settings.ini', settings)
+    site_catalog_file = configuration_directory+settings.site_catalog
+    system_log_file = settings.system_log_file
 
     # Configure logging
     global gsmlogger
@@ -80,8 +82,8 @@ def main():
     rt = redcap_transactions()
     rt.configuration_directory = configuration_directory
 
-    properties = rt.init_redcap_interface(setup, gsmlogger.logger)
-    transform_xsl = configuration_directory + setup['xml_formatting_tranform_xsl']
+    properties = rt.init_redcap_interface(settings, gsmlogger.logger)
+    transform_xsl = configuration_directory + settings.xml_formatting_tranform_xsl
     #get data from the redcap for the fields listed in the source_data_schema.xml
     response = rt.get_data_from_redcap(properties, gsmlogger.logger)
 

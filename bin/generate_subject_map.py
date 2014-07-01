@@ -36,6 +36,7 @@ from sftp_transactions import sftp_transactions
 from email_transactions import email_transactions
 from redcap_transactions import redcap_transactions
 from GSMLogger import GSMLogger
+import SimpleConfigParser
 
 # Command line default argument values
 default_configuration_directory = proj_root + "config/"
@@ -70,11 +71,13 @@ def main():
     configuration_directory = args['configuration_directory_path'] + '/'
     do_keep_gen_files       = False if args['keep'] is None else True
 
-    # read setup options
-    global setup
-    setup = gsm_lib.read_config(configuration_directory, 'setup.json')
-    site_catalog_file = configuration_directory+setup['site_catalog']
-    system_log_file = setup['system_log_file']
+    # read settings options
+    settings = SimpleConfigParser.SimpleConfigParser()
+    settings.read(configuration_directory + 'settings.ini')
+    settings.set_attributes()
+    gsm_lib.read_config(configuration_directory, 'settings.ini', settings)
+    site_catalog_file = configuration_directory + settings.site_catalog
+    system_log_file = settings.system_log_file
 
     # Configure logging
     global gsmlogger
@@ -85,7 +88,7 @@ def main():
     rt = redcap_transactions()
     rt.configuration_directory = configuration_directory
 
-    properties = rt.init_redcap_interface(setup, gsmlogger.logger)
+    properties = rt.init_redcap_interface(settings, gsmlogger.logger)
     #gets data from the person index for the fields listed in the source_data_schema.xml
     response = rt.get_data_from_redcap(properties, gsmlogger.logger)
     xml_tree = etree.fromstring(response)
@@ -178,7 +181,7 @@ def main():
         raise GSMLogger().LogException("Could not remove file %s ", smi_path)
 
     # send the subject_map.csv to EMR team (sftp server)
-    parse_site_details_and_send(site_catalog_file, subject_map_file, 'sftp')
+    parse_site_details_and_send(site_catalog_file, subject_map_file, 'sftp', settings)
     if do_keep_gen_files :
         print ' * Keeping the temporary file: ' + subject_map_file
     else :
@@ -203,7 +206,7 @@ def main():
             subject_map_exceptions_csv.write("%s"%line)
         subject_map_exceptions_csv.close()
 
-        parse_site_details_and_send(site_catalog_file, subject_map_exceptions_file, 'email')
+        parse_site_details_and_send(site_catalog_file, subject_map_exceptions_file, 'email', settings)
         if do_keep_gen_files :
             print ' * Keeping the temporary file: ' + subject_map_exceptions_file
         else :
@@ -217,7 +220,7 @@ Parse the site details from site catalog and
     OR
     email the exceptions file
 '''
-def parse_site_details_and_send(site_catalog_file, local_file_path, action):
+def parse_site_details_and_send(site_catalog_file, local_file_path, action, settings):
     if not os.path.exists(local_file_path):
         raise GSMLogger().LogException("Error: subject map file "+local_file_path+" file not found")
     if not os.path.exists(site_catalog_file):
@@ -271,7 +274,7 @@ def parse_site_details_and_send(site_catalog_file, local_file_path, action):
                                           local_file_path, subjectmap_contact_email)
                 # TODO change the mail body as required
                 mail_body = 'Hi, \n this mail contains attached exceptions.csv file.'
-                email_transactions().send_mail(setup['sender_email'], \
+                email_transactions().send_mail(settings.sender_email, \
                     subjectmap_contact_email, mail_body, [local_file_path])
             else :
                 print 'Invalid option. either sftp/email should be used'

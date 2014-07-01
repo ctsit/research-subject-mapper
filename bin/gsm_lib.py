@@ -67,53 +67,32 @@ def write_element_tree_to_file(element_tree, file_name):
 
 
 '''
-Read the config data from setup.json
+Read the config data from settings.ini
 '''
-def read_config(configuration_directory, setup_json):
-    conf_file = configuration_directory + setup_json
+def read_config(configuration_directory, filename, settings):
+    conf_file = configuration_directory + filename
 
     # check if the path is valid
     if not os.path.exists(conf_file):
-        raise GSMLogger().LogException("Invalid path specified for conf file: " + setup_json)
-
-    try:
-        json_data = open(conf_file)
-    except IOError:
-        #raise logger.error
-        print "file " + conf_file + " could not be opened"
-        raise
-
-    setup = json.load(json_data)
-    json_data.close()
+        raise GSMLogger().LogException("Invalid path specified for conf file: " + filename)    
 
     # test for required parameters
     required_parameters = ['source_data_schema_file', 'site_catalog',
                     'system_log_file']
 
     for parameter in required_parameters:
-        if not parameter in setup:
+        if not settings.hasoption(parameter):
             raise GSMLogger().LogException("read_config: required parameter, "
                 + parameter  + "', is not set in " + conf_file)
 
     # test for required files but only for the parameters that are set
     files = ['source_data_schema_file', 'site_catalog']
     for item in files:
-        if item in setup:
-            if(item == 'system_log_file'):
-                file_path = proj_root + 'log/'
-                if not os.path.exists(file_path):
-                    try:
-                        os.makedirs(file_path)
-                    except OSError:
-                        print "Unable to create folder: " + file_path
-            else:
-                file_path = configuration_directory + setup[item]
-
-            if not os.path.exists(file_path):
-                print 'Checking existence of file: ' + file_path
-                raise GSMLogger().LogException("read_config: " + item
-                    + " file, '" + setup[item] + "', specified in " + conf_file + " does not exist")
-    return setup
+        if settings.hasoption(item):
+            if not os.path.exists(configuration_directory + settings.getoption(item)):
+                raise LogException("read_config: " + item + " file, '"
+                        + settings.getoption(item) + "', specified in "
+                        + conf_file + " does not exist")
 
 
 
