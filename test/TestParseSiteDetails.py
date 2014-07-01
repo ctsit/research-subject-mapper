@@ -6,6 +6,7 @@ import pprint
 
 sys.path.append('bin/')
 import generate_subject_map
+import gsm_lib
 
 """
     @author Andrei Sura
@@ -23,6 +24,7 @@ class TestParseSiteDetails(unittest.TestCase):
         <site_password>     source_pass             </site_password>
         <site_remotepath>   smi.xml                 </site_remotepath>
         <site_contact_email>jdoe@example.com        </site_contact_email>
+        <site_key_path>                             </site_key_path>
     </site>
 
     <site type="data_destination">
@@ -31,6 +33,7 @@ class TestParseSiteDetails(unittest.TestCase):
         <site_password>     dest_pass               </site_password>
         <site_remotepath>   smi.xml                 </site_remotepath>
         <site_contact_email>jdoe@example.com        </site_contact_email>
+        <site_key_path>     path                    </site_key_path>
     </site>
 </sites_list>
         """
@@ -47,22 +50,26 @@ class TestParseSiteDetails(unittest.TestCase):
 
         good_dikt_source = {
             'site_URI'              : 'source_sftp',
-            'site_contact_email'    : 'jdoe@example.com',
+            'site_uname'            : 'source_tester',
             'site_password'         : 'source_pass',
             'site_remotepath'       : 'smi.xml',
-            'site_uname'            : 'source_tester'}
+            'site_contact_email'    : 'jdoe@example.com',
+            'site_key_path'         : '',
+        }
 
         good_dikt_dest = {
             'site_URI'              : 'dest_sftp',
-            'site_contact_email'    : 'jdoe@example.com',
+            'site_uname'            : 'dest_tester',
             'site_password'         : 'dest_pass',
             'site_remotepath'       : 'smi.xml',
-            'site_uname'            : 'dest_tester'}
+            'site_contact_email'    : 'jdoe@example.com',
+            'site_key_path'         : 'path',
+        }
 
 
         # Test the actual function
-        dikt_source = generate_subject_map.get_site_details_as_dict(file_path, 'data_source')
-        dikt_dest   = generate_subject_map.get_site_details_as_dict(file_path, 'data_destination')
+        dikt_source = gsm_lib.get_site_details_as_dict(file_path, 'data_source')
+        dikt_dest   = gsm_lib.get_site_details_as_dict(file_path, 'data_destination')
 
         #pprint.pprint(dikt)
         self.assertEqual(good_dikt_source, dikt_source)

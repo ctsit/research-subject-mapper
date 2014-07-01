@@ -1,21 +1,25 @@
-<?xml version='1.0' encoding='US-ASCII'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <sites_list>
-    <site>
-        <site_name>source</site_name>
+    <!-- Note: the `site type` attribute should not be changed -->
+
+    <site type="data_source">
+        <!-- Please change the settings below for the source site -->
         <site_URI>sftp.source_site.edu</site_URI>
         <site_uname>source_user</site_uname>
         <site_password>source_password</site_password>
         <site_remotepath>/smi.xml</site_remotepath>
         <site_contact_email>contact@source_site.edu</site_contact_email>
     </site>
-    <site>
-        <site_name>destination</site_name>
+
+    <site type="data_destination">
+        <!-- Please change the settings below for the destination site -->
         <site_URI>sftp.destination_site.edu:50022</site_URI>
         <site_uname>destination_user</site_uname>
         <site_password>destination_password</site_password>
         <site_remotepath>/output.csv</site_remotepath>
         <site_contact_email>contact@destination_site.edu</site_contact_email>
     </site>
+
     <!--
      SFTP Key-based Authentication
 
