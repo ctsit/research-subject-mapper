@@ -31,7 +31,6 @@ goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
 
 from utils.sftpclient import SFTPClient
-from sftp_transactions import sftp_transactions
 from email_transactions import email_transactions
 from redcap_transactions import redcap_transactions
 from GSMLogger import GSMLogger
