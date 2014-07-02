@@ -29,8 +29,8 @@ import gsm_lib
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
-sys.path.insert(0, proj_root+'bin/utils/')
 
+from utils.sftpclient import SFTPClient
 from sftp_transactions import sftp_transactions
 from email_transactions import email_transactions
 from redcap_transactions import redcap_transactions
@@ -222,64 +222,59 @@ Parse the site details from site catalog and
 def parse_site_details_and_send(site_catalog_file, local_file_path, action, settings):
     if not os.path.exists(local_file_path):
         raise GSMLogger().LogException("Error: subject map file "+local_file_path+" file not found")
+
     if not os.path.exists(site_catalog_file):
-        raise GSMLogger().LogException("Error: site_catalog xml file not found at \
-            file not found at "+ site_catalog_file)
-    else:
-        catalog = open(site_catalog_file, 'r')
-    site_data = etree.parse(site_catalog_file)
-    site_num = len(site_data.findall(".//site"))
-    gsmlogger.logger.info(str(site_num) + " total subject site entries read into tree.")
-    sftp_instance = sftp_transactions()
+        raise GSMLogger().LogException("Error: site_catalog xml file not found at: " + site_catalog_file)
 
-    for site in site_data.iter('site'):
-        site_name = site.findtext('site_name')
-        if site_name == 'destination':
-            subjectmap_URI = site.findtext('site_URI')
-            subjectmap_uname = site.findtext('site_uname')
-            subjectmap_password = site.findtext('site_password')
-            subjectmap_contact_email = site.findtext('site_contact_email')
-            # is it a file transfer or attachment email?
-            if action == 'sftp':
-              '''Pick up the subject_map.csv and put it in the specified
-              sftp server's remote path
+    dikt = gsm_lib.get_site_details_as_dict(site_catalog_file, 'data_destination')
+    site_uri = dikt['site_URI']
+    host, port = gsm_lib.parse_host_and_port(site_uri)
 
-              '''
-              # remote path to send the file to
-              subjectmap_remotepath = site.findtext('site_remotepath')
-              info = '\nSending file [' + local_file_path + '] to ' + subjectmap_URI + ':' + subjectmap_remotepath
-              print info
-              gsmlogger.logger.info(info)
+    site_uname          = dikt['site_uname']
+    site_password       = dikt['site_password']
+    site_remotepath     = dikt['site_remotepath']
+    site_key_path       = dikt['site_key_path']
+    site_contact_email  = dikt['site_contact_email']
 
-              info = 'Errors will be reported to: ' + subjectmap_contact_email
-              print info
-              gsmlogger.logger.info(info)
+    # is it a file transfer or attachment email?
+    if action == 'sftp':
+        # Pick up the subject_map.csv and put it in the specified sftp server's remote path
+        info = '\nSending file: [ %s] to host %s:%s %s' % (local_file_path, host, port, site_remotepath)
+        print info
+        gsmlogger.logger.info(info)
 
-              # put the subject map csv file
-              subjectmap_remote_directory = subjectmap_remotepath.rsplit("/", 1)[0] + "/"
-              remote_file_name = subjectmap_remotepath.split("/")[-1]
-              sftp_instance.send_file_to_uri(subjectmap_URI, subjectmap_uname, \
-                                  subjectmap_password, subjectmap_remote_directory, \
-                                remote_file_name, local_file_path, subjectmap_contact_email)
+        info = 'Errors will be reported to: ' + site_contact_email
+        print info
+        gsmlogger.logger.info(info)
 
-            elif action == 'email':
-                '''Send the subject_map_exceptions.csv to the contact
-                email address as an attachment
+        # put the subject map csv file
+        remote_directory = site_remotepath.rsplit("/", 1)[0] + "/"
+        remote_file_name = site_remotepath.split("/")[-1]
 
-                '''
-                print '\nSending file: [' + local_file_path + '] as email attachement to '\
-                    + subjectmap_contact_email
-                gsmlogger.logger.info('Sending %s as email attachement to %s', \
-                                          local_file_path, subjectmap_contact_email)
-                # TODO change the mail body as required
-                mail_body = 'Hi, \n this mail contains attached exceptions.csv file.'
-                email_transactions().send_mail(settings.sender_email, \
-                    subjectmap_contact_email, mail_body, [local_file_path])
-            else :
-                print 'Invalid option. either sftp/email should be used'
-                gsmlogger.logger.info('Invalid option. either sftp/email should be used')
-    catalog.close()
-    pass
+        sftp_instance = SFTPClient(host, port,
+                                    site_uname,
+                                    site_password,
+                                    site_key_path)
+        sftp_instance.send_file_to_uri(remote_directory,
+                                        remote_file_name,
+                                        local_file_path,
+                                        site_contact_email)
+
+    elif action == 'email':
+        # Send the subject_map_exceptions.csv to the contact email address as an attachment
+        info = '\nSending file: [ %s ] as email attachement to: %s' % (local_file_path, site_contact_email)
+        gsmlogger.logger.info(info)
+
+        # @TODO change the mail body as required
+        mail_body = 'Hi, \n this mail contains attached exceptions.csv file.'
+        email_transactions().send_mail(settings.sender_email,
+                    site_contact_email, mail_body, [local_file_path])
+    else :
+        info = 'Invalid option. Either sftp/email should be used.'
+        print info
+        gsmlogger.logger.warn(info)
+
+    return
 
 
 def get_smi_and_parse(site_catalog_file):
@@ -289,43 +284,32 @@ def get_smi_and_parse(site_catalog_file):
     if not os.path.exists(site_catalog_file):
         raise GSMLogger().LogException("Error: site_catalog xml file not found at \
             file not found at "+ site_catalog_file)
-    else:
-        catalog = open(site_catalog_file, 'r')
-    site_data = etree.parse(site_catalog_file)
-    site_num = len(site_data.findall(".//site"))
-    gsmlogger.logger.info(str(site_num) + " total subject site entries read into tree.")
-    sftp_instance = sftp_transactions()
-    '''The reference site code is the current site on which
-    generate_subject_map.py is running.
-    As we need to get the only smi from the sftp to this site.
 
-    '''
-    for site in site_data.iter('site'):
-        site_name = site.findtext('site_name')
-        if site_name == 'source':
-            site_URI = site.findtext('site_URI')
-            site_uname = site.findtext('site_uname')
-            site_password = site.findtext('site_password')
-            site_contact_email = site.findtext('site_contact_email')
-            '''Pick up the smi file from the server and place it in the proj_root
+    dikt = gsm_lib.get_site_details_as_dict(site_catalog_file, 'data_source')
+    site_uri = dikt['site_URI']
+    host, port = gsm_lib.parse_host_and_port(site_uri)
 
-            '''
-            site_remotepath = site.findtext('site_remotepath')
-            file_name = site_remotepath.split("/")[-1]
-            site_localpath = configuration_directory+file_name
+    site_uname          = dikt['site_uname']
+    site_password       = dikt['site_password']
+    site_remotepath     = dikt['site_remotepath']
+    site_key_path       = dikt['site_key_path']
+    site_contact_email  = dikt['site_contact_email']
 
-            info = 'Retrieving file: ' + site_remotepath + ' from ' + site_URI
-            print info
-            gsmlogger.logger.info(info)
 
-            info ='Errors will be reported to: ' + site_contact_email
-            print info
-            gsmlogger.logger.info(info)
+    file_name = site_remotepath.split("/")[-1]
+    site_localpath = configuration_directory + file_name
 
-            sftp_instance.get_file_from_uri(site_URI, site_uname, site_password, \
-                      site_remotepath, site_localpath, site_contact_email)
-    catalog.close()
-    gsmlogger.logger.info("site catalog XML file closed.")
+    # Pick up the smi file from the server and place it in the proj_root
+    info = 'Retrieving file: %s from %s:%s' % (site_remotepath, host, port)
+    print info
+    gsmlogger.logger.info(info)
+
+    info = 'Errors will be reported to: ' + site_contact_email
+    print info
+    gsmlogger.logger.info(info)
+
+    sftp_instance = SFTPClient(host, port, site_uname, site_password, site_key_path)
+    sftp_instance.get_file_from_uri(site_remotepath, site_localpath, site_contact_email)
     return site_localpath
 
 

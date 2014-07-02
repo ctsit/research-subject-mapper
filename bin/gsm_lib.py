@@ -14,6 +14,7 @@ __version__     = "0.1"
 __email__       = ""
 __status__      = "Development"
 
+from lxml import etree
 import pprint
 import os
 import sys
@@ -26,9 +27,8 @@ import shutil
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
+
 sys.path.insert(0, proj_root+'bin/utils/')
-from sftp_transactions import sftp_transactions
-from redcap_transactions import redcap_transactions
 from GSMLogger import GSMLogger
 
 
@@ -120,6 +120,47 @@ else
 '''
 def get_temp_path(do_keep_gen_files) :
     if do_keep_gen_files :
-        return create_temp_dir_debug() + '/'
+        return create_temp_dir_debug('.') + '/'
     else :
         return tempfile.mkdtemp('/')
+
+
+"""
+    Returns a tuple comprising hostname and port number from raw text
+    Example:
+        From raw: sftp.example.com:1234
+        Return  : [sftp.example.com, 1234]
+"""
+def parse_host_and_port(raw) :
+    host_and_port = raw.split(':', 2)
+    if (2 == len(host_and_port)) :
+        return host_and_port
+
+    info = 'The SFTP uri does not contain a port. Default to port 22'
+    print info
+    GSMLogger().LogException(info)
+    return [raw, 22]
+
+'''
+    @return a dictionary representation of a site from xml tree
+'''
+def get_site_details_as_dict(file_path, site_type):
+    valid_site_types = ['data_source', 'data_destination']
+    if (not site_type in valid_site_types) :
+        raise GSMLogger().LogException("Developer error: Invalid site_type specified") 
+
+    data = {}
+    if not os.path.exists(file_path):
+        raise GSMLogger().LogException("Error: xml file not found at: " + file_path)
+
+    sites_list = etree.parse(file_path)
+    site = sites_list.xpath("(/sites_list/site[@type='" + site_type + "'])[1]")[0]
+    data['site_URI']            = handle_blanks( site.findtext('site_URI') )
+    data['site_uname']          = handle_blanks( site.findtext('site_uname') )
+    data['site_password']       = handle_blanks( site.findtext('site_password') )
+    data['site_remotepath']     = handle_blanks( site.findtext('site_remotepath') )
+    data['site_contact_email']  = handle_blanks( site.findtext('site_contact_email') )
+    data['site_key_path']       = handle_blanks( site.findtext('site_key_path') )
+
+    return data
+

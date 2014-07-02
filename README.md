@@ -2,35 +2,74 @@
 
 Research Subject Mapper is a tool designed to serve the needs of multi-center studies to prevent exposure of medical record identifiers to the data coordination center while allowing the data coordination center to specify data collection periods for the research subjects.  The intended usage of this tool is to combine authoritative data from a research subject data store with identifiable data at a data collection site to generate inputs for queries of an Electronic Health Record (EHR).
 
-This tool has 2 components. The first component, generate_subject_map_input.py, allows data aggregators to access and transform data from a REDCap instance to generate an input file for site administrators.  
+## Working with research-subject-mapper executable(egg file):
+### Requirements:
+To successfully run the Research Subject Mapper tool on the target machine please install the software below before going any further.
+#### Install Python:
+Run ```sudo apt-get install python2.7``` on target machine
+#### Install below python packages
+```sudo apt-get install python-setuptools``` (to install setuptools package)
 
-The second component, generate_subject_map.py, extracts a mapping of EHR identifiers to research subject identifiers from a local Person Index and combines it with the data from generate_subject_map_input.py.  The resulting data file indicates which patient records should be queried, the applicable date ranges for each patient, and the research subject ID that should be attached to those records when they are returned to study staff. 
+```sudo apt-get install python-dev``` (to install python-dev packages)
 
-The Person Index is a small REDCap instance operating as the data collection site.  Refer to the data dictionary (personIndex_DataDictionary.csv) in the doc directory to see the fields used in the person index REDCap project.
+```sudo apt-get install libxml2``` (to install libxml2 package)
 
-## generate_subject_map_input.py
+```sudo apt-get install libxslt1-dev``` (to install libxslt1-dev package)
+### Download .egg file:
+Research Subject Mapper Executable can be downloaded from the ctsit.github.io/research-subject-mapper. 
 
-generate_subject_map_input.py is a tool used to generate patient-to-research subject ID mapping files based on inputs from REDCap projects.
-This tool reads inputs from the REDCap for the fields listed in the source_data_schema.xml and processes the data to generate an input file for subject mapping. This file smi.xml will be uploaded to the secure FTP location listed in site-catalog.xml.
+### Installation:
+To install research subject mapper run *sudo easy_install rsm_X.X.X.egg* where X's represent version number
 
-Steps to use generate_subject_map_input.py:
+###Configuration setup:
+Check for config-example-gsm and config-example-gsm-input directories in the rsm installation directory on the target machine and prepare custom config directories with your implementations on the target machine.
 
-All files and input paramters required to run generate_subject_map_input.py can be found in the config-example-gsm-input folder.
+#### Files Description:
+The files that need to be modified with your implementation details in config directory are `site-catalog.xml` and `source_data_schema.xml`.
 
-1) Modify files in config-example-gsm-input with your implementation specific details (for example: site details, sftp credentials, source_data details).
-2) Rename config-example-gsm-input to config.
-3) Run generate_subject_map_input.py.
+##### site-catalog.xml
+This xml file follows below structure
+
+```
+<sites_list>
+	<site>
+        <site_name>source</site_name>
+        <site_URI>sftp.source_site.edu</site_URI>
+        <site_uname>source_user</site_uname>
+        <site_password>source_password</site_password>
+        <site_remotepath>ftp/smi.xml</site_remotepath>
+        <site_contact_email>contact@source_site.edu</site_contact_email>
+    </site>
+</sites_list>
+```
+
+##### source_data_schema.xml
+This xml file follows below structure
+
+```
+<source>
+	<redcap_uri>Your_RedCap_Instance_URI</redcap_uri>
+	<apitoken>API_TOKEN</apitoken>
+	<fields>
+		<field>Field_Name</field>
+		<field>Field_Name</field>
+		<field>Field_Name</field>
+	</fields>
+</source>
+```
+
+### Running the generate_subject_mapper tools
+#### Input Requirements:
+1) Edit the source_data_schema.xml file to specify the Person Index fields before running gsm. You will need to specify the study subject number, a field to verify the study subject (typically year of birth), and the subject's corresponding MRN.
+
+2) If this tool is being run on the central site you need to run `gsmi` tool as shown below and put generated files in the ftp of the site. Client sites typically only need to run the generate_subject_mapper tool.
+
+##### To generate input at the central site location
+Run `gsmi -c <FULL_PATH_TO_CONFIG_DIRECTORY> -k <YES_OR_NO_TO_KEEP_GENERATED_FILES>` (if a directory named config is already setup in the parent directory of generate_subject_map_input.py, one need not provide the path to config directory in -c option)
+
+If this tool is being run at the site, one can just provide site ftp details in the `site-catalog.xml` use the `gsm` tool.
 
 
-
-## generate_subject_map.py
-generate_subject_map.py reads the smi.xml from the site FTP listed in the site-catalog.xml. It also reads inputs from the person index for the fields listed in the source_data_schema.xml. This tool maps the subjects in the smi.xml to the subjects in person index based on research subject id and year of birth. All successfully mapped subjects are written to subject_map.csv and all failed mappings are written to subject_map_exceptions.csv.
-
-Steps to use generate_subject_map.py:
-
-All files and input parameters required to run generate_subject_map.py can be found in the config-example-gsm folder.
-
-1) Modify files in config-example-gsm with your implementation specific details (for example: site details, SFTP details, source_data details)
-2) Rename config-example-gsm to config
-3) Run generate_subject_map.py
+#### To run generate_subject_map.py tool:
+Run `gsm -c <FULL_PATH_TO_CONFIG_DIRECTORY> -k <YES_OR_NO_TO_KEEP_GENERATED_FILES>` (if a directory named config is already setup in the parent directory of generate_subject_map_input.py, one need not provide the path to config directory in -c option)
 
