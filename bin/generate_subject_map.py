@@ -232,6 +232,7 @@ def parse_site_details_and_send(site_catalog_file, local_file_path, action):
     site_remotepath     = dikt['site_remotepath']
     site_key_path       = dikt['site_key_path']
     site_contact_email  = dikt['site_contact_email']
+    sender_email = setup['sender_email']
 
     # is it a file transfer or attachment email?
     if action == 'sftp':
@@ -248,7 +249,8 @@ def parse_site_details_and_send(site_catalog_file, local_file_path, action):
         remote_directory = site_remotepath.rsplit("/", 1)[0] + "/"
         remote_file_name = site_remotepath.split("/")[-1]
 
-        sftp_instance = SFTPClient(host, port,
+        sftp_instance = SFTPClient(host, sender_email, 
+                                    port,
                                     site_uname,
                                     site_password,
                                     site_key_path)
@@ -291,7 +293,7 @@ def get_smi_and_parse(site_catalog_file):
     site_remotepath     = dikt['site_remotepath']
     site_key_path       = dikt['site_key_path']
     site_contact_email  = dikt['site_contact_email']
-
+    sender_email = setup['sender_email']
 
     file_name = site_remotepath.split("/")[-1]
     site_localpath = configuration_directory + file_name
@@ -305,7 +307,7 @@ def get_smi_and_parse(site_catalog_file):
     print info
     gsmlogger.logger.info(info)
 
-    sftp_instance = SFTPClient(host, port, site_uname, site_password, site_key_path)
+    sftp_instance = SFTPClient(host, sender_email,port, site_uname, site_password, site_key_path)
     sftp_instance.get_file_from_uri(site_remotepath, site_localpath, site_contact_email)
     return site_localpath
 
