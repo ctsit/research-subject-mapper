@@ -22,6 +22,7 @@ import datetime
 import contextlib
 import tempfile
 import shutil
+from urlparse import urlparse
 
 # This addresses the issues with relative paths
 file_dir = os.path.dirname(os.path.realpath(__file__))
@@ -73,7 +74,7 @@ def read_config(configuration_directory, filename, settings):
 
     # check if the path is valid
     if not os.path.exists(conf_file):
-        raise GSMLogger().LogException("Invalid path specified for conf file: " + filename)    
+        raise GSMLogger().LogException("Invalid path specified for conf file: " + filename)
 
     # test for required parameters
     required_parameters = ['source_data_schema_file', 'site_catalog',
@@ -132,14 +133,13 @@ def get_temp_path(do_keep_gen_files) :
         Return  : [sftp.example.com, 1234]
 """
 def parse_host_and_port(raw) :
-    host_and_port = raw.split(':', 2)
-    if (2 == len(host_and_port)) :
-        return host_and_port
-
-    info = 'The SFTP uri does not contain a port. Default to port 22'
-    print info
-    GSMLogger().LogException(info)
-    return [raw, 22]
+    import re
+    parse_uri = '(?:http.*://)?(?P<host>[^:/ ]+).?(?P<port>[0-9]*).*'
+    m = re.search(parse_uri,raw)
+    port = m.group('port')
+    if not port:
+        port = 22
+    return [m.group('host'),port]
 
 '''
     @return a dictionary representation of a site from xml tree

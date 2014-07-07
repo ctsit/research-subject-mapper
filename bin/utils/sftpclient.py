@@ -7,7 +7,7 @@ class SFTPClient:
     """A class for handling the sftp transactions. This class contains
     functions for getting a file from sftp server and putting a file
     to a sftp server"""
-    def __init__(self, hostname, port=22, username=None, password=None,
+    def __init__(self, hostname, sender_email, port=22, username=None, password=None,
                  private_key=None, private_key_pass=None):
         self.data = []
         self._hostname = hostname
@@ -16,6 +16,7 @@ class SFTPClient:
         self._password = password
         self._private_key = private_key
         self._private_key_pass = private_key_pass
+        self.sender_email = sender_email
 
     def send_file_to_uri(self, remote_path, file_name, local_path, contact_email):
         try:
@@ -24,7 +25,7 @@ class SFTPClient:
             # Email error to the concerned authority
             print 'Error sending file to %s' % self._hostname
             print 'Check the credentials/remotepath/localpath/Server URI'
-            email_transactions().send_mail('please-do-not-reply@ufl.edu', contact_email, str(e))
+            email_transactions().send_mail(self.sender_email,contact_email, str(e))
             print str(e)
 
     def get_file_from_uri(self, remotepath, localpath, contact_email):
@@ -32,7 +33,7 @@ class SFTPClient:
             self.get(remotepath, localpath)
         except Exception, e:
             # Email error to the concerned authority
-            email_transactions().send_mail('please-do-not-reply@ufl.edu', contact_email, str(e))
+            email_transactions().send_mail(self.sender_email, contact_email, str(e))
             print str(e)
 
     def put(self, local_path, remote_path):

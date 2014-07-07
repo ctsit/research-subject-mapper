@@ -44,6 +44,6 @@ rsm-devconfig/
 
 subject_map.csv
 subject_map_exceptions.csv
-gsm_config/
-gsmi_config/
+gsm-devconfig/
+gsmi-devconfig/
 

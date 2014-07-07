@@ -98,7 +98,7 @@ def main():
     person_index_data = transform(xml_tree)
 
     # # # retrieve smi.xml from the sftp server
-    smi_path = get_smi_and_parse(site_catalog_file)
+    smi_path = get_smi_and_parse(site_catalog_file, settings)
     if not os.path.exists(smi_path):
         raise GSMLogger().LogException("Error: file " + smi_path+ " not found")
     else:
@@ -234,6 +234,7 @@ def parse_site_details_and_send(site_catalog_file, local_file_path, action, sett
     site_remotepath     = dikt['site_remotepath']
     site_key_path       = dikt['site_key_path']
     site_contact_email  = dikt['site_contact_email']
+    sender_email = settings.sender_email
 
     # is it a file transfer or attachment email?
     if action == 'sftp':
@@ -250,7 +251,8 @@ def parse_site_details_and_send(site_catalog_file, local_file_path, action, sett
         remote_directory = site_remotepath.rsplit("/", 1)[0] + "/"
         remote_file_name = site_remotepath.split("/")[-1]
 
-        sftp_instance = SFTPClient(host, port,
+        sftp_instance = SFTPClient(host, sender_email, 
+                                    port,
                                     site_uname,
                                     site_password,
                                     site_key_path)
@@ -276,7 +278,7 @@ def parse_site_details_and_send(site_catalog_file, local_file_path, action, sett
     return
 
 
-def get_smi_and_parse(site_catalog_file):
+def get_smi_and_parse(site_catalog_file, settings):
     '''Function to get the smi files from sftp server
     The smi files are picked up according to the details in the site-catalog.xml
     '''
@@ -293,7 +295,7 @@ def get_smi_and_parse(site_catalog_file):
     site_remotepath     = dikt['site_remotepath']
     site_key_path       = dikt['site_key_path']
     site_contact_email  = dikt['site_contact_email']
-
+    sender_email = settings.sender_email
 
     file_name = site_remotepath.split("/")[-1]
     site_localpath = configuration_directory + file_name
@@ -307,7 +309,7 @@ def get_smi_and_parse(site_catalog_file):
     print info
     gsmlogger.logger.info(info)
 
-    sftp_instance = SFTPClient(host, port, site_uname, site_password, site_key_path)
+    sftp_instance = SFTPClient(host, sender_email,port, site_uname, site_password, site_key_path)
     sftp_instance.get_file_from_uri(site_remotepath, site_localpath, site_contact_email)
     return site_localpath
 
