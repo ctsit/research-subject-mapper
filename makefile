@@ -28,6 +28,9 @@ compile:
 	python -m compileall bin
 	python -m compileall test
 
+devconfig:
+	git clone git@ctsit-forge.ctsi.ufl.edu:gsm-devconfig.git
+	git clone git@ctsit-forge.ctsi.ufl.edu:gsmi-devconfig.git
 
 test_gsm:
 	@test -d gsm-devconfig || echo "Please create the 'gsm-devconfig' folder first"
