@@ -6,8 +6,8 @@ help:
 	@echo "\t egg        - create the python *EGG* package"
 	@echo "\t bdist      - create the binary distribution package"
 	@echo "\t sdist      - create the software distribution package"
-	@echo "\t test_gsm   - run the gsm application (expects the config folder 'gsm_config')"
-	@echo "\t test_gsmi  - run the gsmi application (expects the config folder 'gsmi_config')"
+	@echo "\t test_gsm   - run the gsm application (expects the config folder 'gsm-devconfig')"
+	@echo "\t test_gsmi  - run the gsmi application (expects the config folder 'gsmi-devconfig')"
 	@echo "\t coverage   - run figleaf application to generate statistics on code coverage"
 	@echo "\t test       - run unit tests"
 	@echo "\t clean      - remove generated files"
@@ -30,14 +30,14 @@ compile:
 
 
 test_gsm:
-	@test -d gsm_config || echo "Please create the 'gsm_config' folder first"
+	@test -d gsm-devconfig || echo "Please create the 'gsm-devconfig' folder first"
 	@echo "Executing bin/generate_subject_map.py ..."
-	python bin/generate_subject_map.py -c gsm_config -k yes
+	python bin/generate_subject_map.py -c gsm-devconfig -k yes
 
 test_gsmi:
-	@test -d gsmi_config || echo "Please create the 'gsmi_config' folder first"
+	@test -d gsmi-devconfig || echo "Please create the 'gsmi-devconfig' folder first"
 	@echo 'Executing bin/generate_subject_map_input.py ...'
-	python bin/generate_subject_map_input.py -c gsmi_config -k yes
+	python bin/generate_subject_map_input.py -c gsmi-devconfig -k yes
 
 coverage:
 	which figleaf || sudo easy_install figleaf
