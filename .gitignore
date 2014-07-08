@@ -35,8 +35,7 @@ nosetests.xml
 .project
 .pydevproject
 
-log/gsm.log
-log/gsmi.log
+log/*.log
 
 rsm-devconfig/
 *.xml
