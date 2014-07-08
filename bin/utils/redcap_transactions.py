@@ -17,16 +17,16 @@ class redcap_transactions:
         self.data = []
         self.configuration_directory = ''
 
-    def init_redcap_interface(self,setup,logger):
+    def init_redcap_interface(self,settings,logger):
         '''This function initializes the variables requrired to get data from redcap
-        interface. This reads the data from the setup.json and fills the dict
+        interface. This reads the data from the settings.ini and fills the dict
         with required properties.
         Mohan'''
         logger.info('Initializing redcap interface')
         host = ''
         path = ''
         source_data_schema_file = ''
-        source_data_schema_file = self.configuration_directory + '/' + setup['source_data_schema_file']
+        source_data_schema_file = self.configuration_directory + '/' + settings.source_data_schema_file
 
         if not os.path.exists(source_data_schema_file):
             raise Exception("Error: source_data_schema.xml file not found at\
