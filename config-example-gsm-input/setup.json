@@ -1,9 +1,0 @@
-{
-    "project_name": "Generate Subject Map Input files for Project",
-
-    "site_catalog"                  : "site-catalog.xml",
-    "source_data_schema_file"       : "source_data_schema.xml",
-    "xml_formatting_tranform_xsl"   : "xml_formatting_tranform.xsl",
-
-    "system_log_file"               : "/full-path-to-log-file/gsmi.log"
-}
