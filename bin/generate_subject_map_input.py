@@ -1,4 +1,4 @@
-#/usr/bin/env python
+#!/usr/bin/env python
 """
 
 generate_subject_map_input.py -  Tool to generate patient-to-research
