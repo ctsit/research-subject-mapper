@@ -13,28 +13,22 @@ __version__ = "0.1"
 __email__ = "mohan88@ufl.edu"
 __status__ = "Development"
 
-from lxml import etree
-import xml.etree.ElementTree as ET
-import logging
-import httplib
-from urllib import urlencode
 import os
-import sys
 import argparse
 
-import datetime
+from lxml import etree
+
 import gsm_lib
+from utils.sftpclient import SFTPClient
+from utils.email_transactions import email_transactions
+from utils.redcap_transactions import redcap_transactions
+from utils import SimpleConfigParser
 
 # This addresses the issues with relative paths
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
 
-from utils.sftpclient import SFTPClient
-from email_transactions import email_transactions
-from redcap_transactions import redcap_transactions
-from GSMLogger import GSMLogger
-import SimpleConfigParser
 
 # Command line default argument values
 default_configuration_directory = proj_root + "config/"
