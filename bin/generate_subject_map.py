@@ -44,22 +44,7 @@ def main():
     global do_keep_gen_files
 
     # obtaining command line arguments for path to config directory
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '-c', dest='configuration_directory_path',
-        default=default_configuration_directory,
-        required=False,
-        help='Specify the path to the configuration directory')
-
-    # read the optional argument `-k` for keeping the generated files
-    parser.add_argument(
-        '-k', '--keep',
-        default=default_do_keep_gen_files,
-        required=False,
-        help = 'Specify `yes` to preserve the files generated during execution')
-
-
-    args = vars(parser.parse_args())
+    args = parse_args()
     configuration_directory = args['configuration_directory_path'] + '/'
     do_keep_gen_files       = False if args['keep'] is None else True
 
@@ -270,6 +255,25 @@ def parse_site_details_and_send(site_catalog_file, local_file_path, action, sett
         gsmlogger.logger.warn(info)
 
     return
+
+
+def parse_args():
+    """Parses command line arguments"""
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', required=False,
+                        dest='configuration_directory_path',
+                        default=proj_root + 'config/',
+                        help='Specify the path to the configuration directory')
+
+    parser.add_argument('-k', '--keep', required=False,
+                        default=False, action='store_true',
+                        help='keep files generated during execution')
+
+    parser.add_argument('-v', '--verbose', required=False,
+                        default=False, action='store_true',
+                        help='increase verbosity of output')
+
+    return vars(parser.parse_args())
 
 
 def get_smi_and_parse(site_catalog_file, settings):
