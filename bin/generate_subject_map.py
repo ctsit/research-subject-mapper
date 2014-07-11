@@ -181,7 +181,7 @@ def main():
             subject_map_exceptions_csv.write("%s"%line)
         subject_map_exceptions_csv.close()
 
-        parse_site_details_and_send(site_catalog_file, subject_map_exceptions_file, 'email', settings)
+        parse_site_details_and_send(site_catalog_file, subject_map_exceptions_file, 'email', settings, logger)
         if do_keep_gen_files:
             logger.info('Keeping the temporary file: ' + subject_map_exceptions_file)
         else:
