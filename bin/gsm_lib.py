@@ -23,14 +23,16 @@ import contextlib
 import tempfile
 import shutil
 from urlparse import urlparse
+import logging
 
 # This addresses the issues with relative paths
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
 
-sys.path.insert(0, proj_root+'bin/utils/')
-from GSMLogger import GSMLogger
+# Initialize a Logger for this module
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
 '''
@@ -66,33 +68,38 @@ def write_element_tree_to_file(element_tree, file_name):
     element_tree.write(file_name, encoding="us-ascii", xml_declaration=True,method="xml")
 
 
-'''
-Read the config data from settings.ini
-'''
+class ConfigurationError(Exception):
+    pass
+
+
 def read_config(configuration_directory, filename, settings):
-    conf_file = configuration_directory + filename
+    """Read the config data from settings.ini"""
+    conf_file = os.path.join(configuration_directory, filename)
 
     # check if the path is valid
     if not os.path.exists(conf_file):
-        raise GSMLogger().LogException("Invalid path specified for conf file: " + filename)
+        message = "Cannot find settings file: " + conf_file
+        logger.error(message)
+        raise ConfigurationError(message)
 
     # test for required parameters
-    required_parameters = ['source_data_schema_file', 'site_catalog',
-                    'system_log_file']
+    required_parameters = ['source_data_schema_file', 'site_catalog']
 
     for parameter in required_parameters:
         if not settings.hasoption(parameter):
-            raise GSMLogger().LogException("read_config: required parameter, "
-                + parameter  + "', is not set in " + conf_file)
+            message = "Required parameter '{0}' is not set in '{1}'".format(parameter, conf_file)
+            logger.error(message)
+            raise ConfigurationError(message)
 
     # test for required files but only for the parameters that are set
     files = ['source_data_schema_file', 'site_catalog']
     for item in files:
         if settings.hasoption(item):
-            if not os.path.exists(configuration_directory + settings.getoption(item)):
-                raise LogException("read_config: " + item + " file, '"
-                        + settings.getoption(item) + "', specified in "
-                        + conf_file + " does not exist")
+            if not os.path.exists(os.path.join(configuration_directory, settings.getoption(item))):
+                message = "{0} file, '{1}', specified in {2}, does not exist".format(
+                    item, settings.getoption(item), conf_file)
+                logger.error(message)
+                raise ConfigurationError(message)
 
 
 
@@ -141,19 +148,25 @@ def parse_host_and_port(raw) :
         port = 22
     return [m.group('host'),port]
 
-'''
-    @return a dictionary representation of a site from xml tree
-'''
+
 def get_site_details_as_dict(file_path, site_type):
+    """
+    Parses and returns the details from a site catalog
+
+    :param file_path: path to site catalog XML
+    :param site_type: either "data_source" or "data_destination"
+    :return: a dictionary representation of a site from xml tree
+    """
     valid_site_types = ['data_source', 'data_destination']
-    if (not site_type in valid_site_types) :
-        raise GSMLogger().LogException("Developer error: Invalid site_type specified") 
+    assert site_type in valid_site_types
 
     data = {}
-    if not os.path.exists(file_path):
-        raise GSMLogger().LogException("Error: xml file not found at: " + file_path)
+    try:
+        sites_list = etree.parse(file_path)
+    except IOError:
+        logger.exception("Could not open XML file at: " + file_path)
+        raise
 
-    sites_list = etree.parse(file_path)
     site = sites_list.xpath("(/sites_list/site[@type='" + site_type + "'])[1]")[0]
     data['site_URI']            = handle_blanks( site.findtext('site_URI') )
     data['site_uname']          = handle_blanks( site.findtext('site_uname') )

@@ -123,14 +123,15 @@ def configure_logging(verbose=False):
     application = appdirs.AppDirs(appname='research-subject-mapper', appauthor='University of Florida')
 
     # create logger for our application
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.DEBUG)
     logger = logging.getLogger(application.appname)
-    logger.setLevel(logging.DEBUG)
 
     # create a console handler
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.DEBUG if verbose else logging.INFO)
     console_handler.setFormatter(logging.Formatter('%(relativeCreated)+15s %(name)s - %(levelname)s: %(message)s'))
-    logger.addHandler(console_handler)
+    root_logger.addHandler(console_handler)
 
     # make sure we can write to the log
     gsm_lib.makedirs(application.user_log_dir)
@@ -147,7 +148,7 @@ def configure_logging(verbose=False):
         file_handler.setLevel(logging.DEBUG)
         file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s'))
         logger.debug('Log file will be "%s"', filename)
-        logger.addHandler(file_handler)
+        root_logger.addHandler(file_handler)
     else:
         logger.warning('File logging has been disabled.')
 
