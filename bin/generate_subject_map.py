@@ -29,7 +29,7 @@ from utils import SimpleConfigParser
 # This addresses the issues with relative paths
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
-proj_root = os.path.abspath(goal_dir)+'/'
+proj_root = os.path.abspath(goal_dir) + '/'
 
 
 # Command line default argument values
@@ -37,10 +37,6 @@ default_configuration_directory = proj_root + "config/"
 default_do_keep_gen_files = None
 
 
-'''
-Application entry point
-@TODO: extract logic into separate functions to reduce size
-'''
 def main():
     global configuration_directory
 
@@ -64,7 +60,7 @@ def main():
     rt.configuration_directory = configuration_directory
 
     properties = rt.init_redcap_interface(settings, logger)
-    #gets data from the person index for the fields listed in the source_data_schema.xml
+    # gets data from the person index for the fields listed in the source_data_schema.xml
     response = rt.get_data_from_redcap(properties, logger)
     xml_tree = etree.fromstring(response)
 
@@ -88,9 +84,10 @@ def main():
     #generating the person index dictionary
     person_index_dict = {}
     for item in person_index_data.iter('item'):
-         person_index_dict[item.findtext('research_subject_id')] = \
-         [item.findtext('yob'),item.findtext('mrn'),\
-                                       item.findtext('facility_code')]
+        person_index_dict[item.findtext('research_subject_id')] = [
+            item.findtext('yob'),
+            item.findtext('mrn'),
+            item.findtext('facility_code')]
     #iterate through the smi data and generate a
     # new merged xml's for subject_map and subject_map_exceptions
     subjectmap_root = etree.Element("subject_map_records")
@@ -99,7 +96,7 @@ def main():
     for item in smi_data.iter('item'):
         if item.findtext('research_subject_id') in person_index_dict.keys():
             logger.debug("Processing research_subject_id %s", item.findtext('research_subject_id'))
-            if(person_index_dict[item.findtext('research_subject_id')][0]==item.findtext('yob')):
+            if (person_index_dict[item.findtext('research_subject_id')][0] == item.findtext('yob')):
                 logger.debug("yob matched for research_subject_id %s", item.findtext('research_subject_id'))
                 mrn = etree.SubElement(item, "mrn")
                 mrn.text = person_index_dict[item.findtext('research_subject_id')][1]
@@ -113,7 +110,7 @@ def main():
                 exception_item = etree.Element("item")
                 research_subject_id = etree.SubElement(exception_item, "research_subject_id")
                 research_subject_id.text = item.findtext('research_subject_id')
-                if(research_subject_id.text is not None):
+                if (research_subject_id.text is not None):
                     exceptions = True
                 pi_yob = etree.SubElement(exception_item, "Person_Index_YOB")
                 pi_yob.text = person_index_dict[item.findtext('research_subject_id')][0]
@@ -132,16 +129,16 @@ def main():
 
     try:
         subject_map_csv = open(subject_map_file, "w")
-        subject_map_csv.write("%s"%'"research_subject_id","start_date","end_date","mrn","facility_code"\n')
+        subject_map_csv.write("%s" % '"research_subject_id","start_date","end_date","mrn","facility_code"\n')
 
         for item in subjectmap_root.iter("item"):
-            line = '"{0}","{1}","{2}","{3}","{4}"\n'.format(\
+            line = '"{0}","{1}","{2}","{3}","{4}"\n'.format( \
                 gsm_lib.handle_blanks(item.findtext("research_subject_id")), \
-                gsm_lib.handle_blanks(item.findtext("start_date")),\
-                gsm_lib.handle_blanks(item.findtext("end_date")),\
-                gsm_lib.handle_blanks(item.findtext("mrn")),\
+                gsm_lib.handle_blanks(item.findtext("start_date")), \
+                gsm_lib.handle_blanks(item.findtext("end_date")), \
+                gsm_lib.handle_blanks(item.findtext("mrn")), \
                 gsm_lib.handle_blanks(item.findtext("facility_code")))
-            subject_map_csv.write("%s"%line)
+            subject_map_csv.write("%s" % line)
 
         subject_map_csv.close()
     except IOError:
@@ -172,13 +169,13 @@ def main():
         except IOError:
             logger.exception("Could not open file %s for write", subject_map_exceptions_file)
             raise
-        subject_map_exceptions_csv.write("%s"%'"research_subject_id","person_index_yob","redcap_yob"\n')
+        subject_map_exceptions_csv.write("%s" % '"research_subject_id","person_index_yob","redcap_yob"\n')
         for item in subjectmap_exceptions_root.iter("item"):
             line = '"{0}","{1}","{2}"\n'.format(
                 gsm_lib.handle_blanks(item.find("research_subject_id").text),
                 gsm_lib.handle_blanks(item.find("Person_Index_YOB").text),
                 gsm_lib.handle_blanks(item.find("HCVTarget_YOB").text))
-            subject_map_exceptions_csv.write("%s"%line)
+            subject_map_exceptions_csv.write("%s" % line)
         subject_map_exceptions_csv.close()
 
         parse_site_details_and_send(site_catalog_file, subject_map_exceptions_file, 'email', settings, logger)
@@ -251,20 +248,22 @@ Parse the site details from site catalog and
     OR
     email the exceptions file
 '''
+
+
 def parse_site_details_and_send(site_catalog_file, local_file_path, action, settings, logger):
     if not os.path.exists(local_file_path):
-        logging.error("subject map file "+local_file_path+" file not found")
-        raise IOError("subject map file "+local_file_path+" file not found")
+        logging.error("subject map file " + local_file_path + " file not found")
+        raise IOError("subject map file " + local_file_path + " file not found")
 
     dikt = gsm_lib.get_site_details_as_dict(site_catalog_file, 'data_destination')
     site_uri = dikt['site_URI']
     host, port = gsm_lib.parse_host_and_port(site_uri)
 
-    site_uname          = dikt['site_uname']
-    site_password       = dikt['site_password']
-    site_remotepath     = dikt['site_remotepath']
-    site_key_path       = dikt['site_key_path']
-    site_contact_email  = dikt['site_contact_email']
+    site_uname = dikt['site_uname']
+    site_password = dikt['site_password']
+    site_remotepath = dikt['site_remotepath']
+    site_key_path = dikt['site_key_path']
+    site_contact_email = dikt['site_contact_email']
     sender_email = settings.sender_email
 
     # is it a file transfer or attachment email?
@@ -280,15 +279,15 @@ def parse_site_details_and_send(site_catalog_file, local_file_path, action, sett
         remote_directory = os.path.dirname(site_remotepath)
         remote_file_name = os.path.basename(site_remotepath)
 
-        sftp_instance = SFTPClient(host, sender_email, 
-                                    port,
-                                    site_uname,
-                                    site_password,
-                                    site_key_path)
+        sftp_instance = SFTPClient(host, sender_email,
+                                   port,
+                                   site_uname,
+                                   site_password,
+                                   site_key_path)
         sftp_instance.send_file_to_uri(remote_directory,
-                                        remote_file_name,
-                                        local_file_path,
-                                        site_contact_email)
+                                       remote_file_name,
+                                       local_file_path,
+                                       site_contact_email)
 
     elif action == 'email':
         # Send the subject_map_exceptions.csv to the contact email address as an attachment
@@ -298,8 +297,8 @@ def parse_site_details_and_send(site_catalog_file, local_file_path, action, sett
         # @TODO change the mail body as required
         mail_body = 'Hi, \n this mail contains attached exceptions.csv file.'
         email_transactions().send_mail(settings.sender_email,
-                    site_contact_email, mail_body, [local_file_path])
-    else :
+                                       site_contact_email, mail_body, [local_file_path])
+    else:
         info = 'Invalid option. Either sftp/email should be used.'
         logger.warn(info)
 
@@ -314,11 +313,11 @@ def get_smi_and_parse(site_catalog_file, settings, logger):
     site_uri = dikt['site_URI']
     host, port = gsm_lib.parse_host_and_port(site_uri)
 
-    site_uname          = dikt['site_uname']
-    site_password       = dikt['site_password']
-    site_remotepath     = dikt['site_remotepath']
-    site_key_path       = dikt['site_key_path']
-    site_contact_email  = dikt['site_contact_email']
+    site_uname = dikt['site_uname']
+    site_password = dikt['site_password']
+    site_remotepath = dikt['site_remotepath']
+    site_key_path = dikt['site_key_path']
+    site_contact_email = dikt['site_contact_email']
     sender_email = settings.sender_email
 
     file_name = os.path.basename(site_remotepath)
@@ -328,7 +327,7 @@ def get_smi_and_parse(site_catalog_file, settings, logger):
     logger.info('Retrieving file: %s from %s:%s', site_remotepath, host, port)
     logger.info('Errors will be reported to: ' + site_contact_email)
 
-    sftp_instance = SFTPClient(host, sender_email,port, site_uname, site_password, site_key_path)
+    sftp_instance = SFTPClient(host, sender_email, port, site_uname, site_password, site_key_path)
     sftp_instance.get_file_from_uri(site_remotepath, site_localpath, site_contact_email)
     return site_localpath
 
