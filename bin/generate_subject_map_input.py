@@ -25,7 +25,7 @@ import appdirs
 import gsm_lib
 from utils.sftpclient import SFTPClient
 from utils.redcap_transactions import redcap_transactions
-import utils.SimpleConfigParser as SimpleConfigParser
+from utils import SimpleConfigParser
 
 # This addresses the issues with relative paths
 file_dir = os.path.dirname(os.path.realpath(__file__))
