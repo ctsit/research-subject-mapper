@@ -77,23 +77,37 @@ def read_config(configuration_directory, filename, settings):
         raise GSMLogger().LogException("Invalid path specified for conf file: " + filename)
 
     # test for required parameters
-    required_parameters = ['source_data_schema_file', 'site_catalog',
-                    'system_log_file']
+    required_parameters = ['source_data_schema_file', 'site_catalog']
 
     for parameter in required_parameters:
         if not settings.hasoption(parameter):
-            raise GSMLogger().LogException("read_config: required parameter, "
-                + parameter  + "', is not set in " + conf_file)
+            message = "read_config: required parameter, " + parameter  + "', \
+is missing in " + conf_file + ". Please set it with appropriate value. For \
+assistance refer settings.ini in config-example folder. Program will now \
+terminate..."
+            print message
+            GSMLogger().LogException(message)
+            sys.exit()
+        elif settings.getoption(parameter) == "":
+            message = "read_config: required parameter, " + parameter  + "', \
+is not set in " + conf_file + ". Please set it with appropriate value. For \
+assistance refer settings.ini in config-example folder. Program will now \
+terminate..."
+            print message
+            GSMLogger().LogException(message)
+            sys.exit()
 
     # test for required files but only for the parameters that are set
     files = ['source_data_schema_file', 'site_catalog']
     for item in files:
         if settings.hasoption(item):
             if not os.path.exists(configuration_directory + settings.getoption(item)):
-                raise LogException("read_config: " + item + " file, '"
-                        + settings.getoption(item) + "', specified in "
-                        + conf_file + " does not exist")
-
+                message = "read_config: " + item + " file, '" + \
+                settings.getoption(item) + "', specified in " + conf_file + \
+                " does not exist"
+                print message
+                GSMLogger().LogException(message)
+                sys.exit()
 
 
 '''

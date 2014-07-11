@@ -40,6 +40,8 @@ import SimpleConfigParser
 default_configuration_directory = proj_root + "config/"
 default_do_keep_gen_files = None
 
+# Defaults for optional settings.ini parameters
+DEFAULT_LOG_FILE = "gsm_log/gsm.log"
 
 '''
 Application entry point
@@ -73,14 +75,20 @@ def main():
     settings = SimpleConfigParser.SimpleConfigParser()
     settings.read(configuration_directory + 'settings.ini')
     settings.set_attributes()
-    gsm_lib.read_config(configuration_directory, 'settings.ini', settings)
-    site_catalog_file = configuration_directory + settings.site_catalog
-    system_log_file = settings.system_log_file
 
+    if not settings.hasoption('system_log_file') or \
+    settings.system_log_file == "":
+        system_log_file = DEFAULT_LOG_FILE
+    else:
+        system_log_file = settings.system_log_file
+    
     # Configure logging
     global gsmlogger
     gsmlogger = GSMLogger()
     gsmlogger.configure_logging(system_log_file)
+
+    gsm_lib.read_config(configuration_directory, 'settings.ini', settings)
+    site_catalog_file = configuration_directory + settings.site_catalog
 
     # Initialize Redcap Interface
     rt = redcap_transactions()
