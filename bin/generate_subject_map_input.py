@@ -50,13 +50,13 @@ def main():
     rt.configuration_directory = configuration_directory
 
     properties = rt.init_redcap_interface(settings, logger)
-    transform_xsl = os.path.join(configuration_directory, settings.xml_formatting_tranform_xsl)
     #get data from the redcap for the fields listed in the source_data_schema.xml
     response = rt.get_data_from_redcap(properties, logger)
     logger.debug(response)
+    xml_tree = etree.fromstring(response)
 
     #XSL Transformation 1: This transformation removes junk data, rename elements and extracts site_id and adds new tag site_id
-    xml_tree = etree.fromstring(response)
+    transform_xsl = os.path.join(configuration_directory, settings.xml_formatting_tranform_xsl)
     xslt = etree.parse(transform_xsl)
     transform = etree.XSLT(xslt)
     xml_transformed = transform(xml_tree)
