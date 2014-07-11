@@ -44,6 +44,7 @@ def main():
     settings = SimpleConfigParser.SimpleConfigParser()
     settings.read(os.path.join(configuration_directory, 'settings.ini'))
     settings.set_attributes()
+    gsm_lib.read_config(configuration_directory, 'settings.ini', settings)
 
     # Initialize Redcap Interface
     rt = redcap_transactions()
