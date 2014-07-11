@@ -15,8 +15,10 @@ __status__ = "Development"
 
 import os
 import argparse
+import logging
 
 from lxml import etree
+import appdirs
 
 import gsm_lib
 from utils.sftpclient import SFTPClient
@@ -41,33 +43,29 @@ Application entry point
 '''
 def main():
     global configuration_directory
-    global do_keep_gen_files
 
     # obtaining command line arguments for path to config directory
     args = parse_args()
-    configuration_directory = args['configuration_directory_path'] + '/'
-    do_keep_gen_files       = False if args['keep'] is None else True
+    configuration_directory = os.path.abspath(args['configuration_directory_path'])
+    do_keep_gen_files = args['keep']
+
+    # Configure logging
+    logger = configure_logging(args['verbose'])
 
     # read settings options
     settings = SimpleConfigParser.SimpleConfigParser()
     settings.read(configuration_directory + 'settings.ini')
     settings.set_attributes()
     gsm_lib.read_config(configuration_directory, 'settings.ini', settings)
-    site_catalog_file = configuration_directory + settings.site_catalog
-    system_log_file = settings.system_log_file
-
-    # Configure logging
-    global gsmlogger
-    gsmlogger = GSMLogger()
-    gsmlogger.configure_logging(system_log_file)
+    site_catalog_file = os.path.join(configuration_directory, settings.site_catalog)
 
     # Initialize Redcap Interface
     rt = redcap_transactions()
     rt.configuration_directory = configuration_directory
 
-    properties = rt.init_redcap_interface(settings, gsmlogger.logger)
+    properties = rt.init_redcap_interface(settings, logger)
     #gets data from the person index for the fields listed in the source_data_schema.xml
-    response = rt.get_data_from_redcap(properties, gsmlogger.logger)
+    response = rt.get_data_from_redcap(properties, logger)
     xml_tree = etree.fromstring(response)
 
     #XSL Transformation : transforms the person_index data
@@ -78,12 +76,12 @@ def main():
 
     # # # retrieve smi.xml from the sftp server
     smi_path = get_smi_and_parse(site_catalog_file, settings)
-    if not os.path.exists(smi_path):
-        raise GSMLogger().LogException("Error: file " + smi_path+ " not found")
-    else:
-        smi = open(smi_path, 'r')
-    #Below code merges the 2 xmls
-    smi_data = etree.parse(smi_path)
+    try:
+        smi_data = etree.parse(smi_path)
+    except IOError:
+        logger.exception("Could not open file: " + smi_path)
+        raise
+
     #sorting both the xml files.
     gsm_lib.sort_element_tree(smi_data)
     gsm_lib.sort_element_tree(person_index_data)
@@ -100,9 +98,9 @@ def main():
     exceptions = False
     for item in smi_data.iter('item'):
         if item.findtext('research_subject_id') in person_index_dict.keys():
-            gsmlogger.logger.debug("Processing research_subject_id %s", item.findtext('research_subject_id'))
+            logger.debug("Processing research_subject_id %s", item.findtext('research_subject_id'))
             if(person_index_dict[item.findtext('research_subject_id')][0]==item.findtext('yob')):
-                gsmlogger.logger.debug("yob matched for research_subject_id %s", item.findtext('research_subject_id'))
+                logger.debug("yob matched for research_subject_id %s", item.findtext('research_subject_id'))
                 mrn = etree.SubElement(item, "mrn")
                 mrn.text = person_index_dict[item.findtext('research_subject_id')][1]
                 facility_code = etree.SubElement(item, "facility_code")
@@ -111,7 +109,7 @@ def main():
                 subjectmap_root.append(item)
 
             else:
-                gsmlogger.logger.debug("yob not matched for research_subject_id %s", item.findtext('research_subject_id'))
+                logger.debug("yob not matched for research_subject_id %s", item.findtext('research_subject_id'))
                 exception_item = etree.Element("item")
                 research_subject_id = etree.SubElement(exception_item, "research_subject_id")
                 research_subject_id.text = item.findtext('research_subject_id')
@@ -130,7 +128,7 @@ def main():
 
     tmp_folder = gsm_lib.get_temp_path(do_keep_gen_files)
     subject_map_file = tmp_folder + "subject_map.csv"
-    gsmlogger.logger.info('Using path subject map file path: ' + subject_map_file)
+    logger.info('Using path subject map file path: ' + subject_map_file)
 
     try:
         subject_map_csv = open(subject_map_file, "w")
@@ -147,48 +145,85 @@ def main():
 
         subject_map_csv.close()
     except IOError:
-        raise GSMLogger().LogException("Could not open file %s for write", subject_map_file)
-
+        logger.exception("Could not open file %s for write", subject_map_file)
+        raise
 
     # remove the smi.xml from the folder because the XSLT process
     # writes data to smi.xml
     try:
-      os.remove(smi_path)
+        os.remove(smi_path)
     except OSError:
-        raise GSMLogger().LogException("Could not remove file %s ", smi_path)
+        logger.exception("Could not remove file %s ", smi_path)
+        raise
 
     # send the subject_map.csv to EMR team (sftp server)
     parse_site_details_and_send(site_catalog_file, subject_map_file, 'sftp', settings)
-    if do_keep_gen_files :
-        print ' * Keeping the temporary file: ' + subject_map_file
-    else :
-        print ' * Removing the temporary file: ' + subject_map_file
+    if do_keep_gen_files:
+        logging.info('Keeping the temporary file: ' + subject_map_file)
+    else:
+        logging.info('Removing the temporary file: ' + subject_map_file)
         os.remove(subject_map_file)
 
-
     # send subject_map_exceptions.csv as email attachment
-    if exceptions :
+    if exceptions:
         subject_map_exceptions_file = tmp_folder + 'subject_map_exceptions.csv'
         try:
             subject_map_exceptions_csv = open(subject_map_exceptions_file, "w")
         except IOError:
-            raise GSMLogger().LogException("Could not open file %s for write", subject_map_exceptions_file)
-
+            logger.exception("Could not open file %s for write", subject_map_exceptions_file)
+            raise
         subject_map_exceptions_csv.write("%s"%'"research_subject_id","person_index_yob","redcap_yob"\n')
         for item in subjectmap_exceptions_root.iter("item"):
-            line = '"{0}","{1}","{2}"\n'.format(\
-                    gsm_lib.handle_blanks(item.find("research_subject_id").text), \
-                    gsm_lib.handle_blanks(item.find("Person_Index_YOB").text),\
-                    gsm_lib.handle_blanks(item.find("HCVTarget_YOB").text))
+            line = '"{0}","{1}","{2}"\n'.format(
+                gsm_lib.handle_blanks(item.find("research_subject_id").text),
+                gsm_lib.handle_blanks(item.find("Person_Index_YOB").text),
+                gsm_lib.handle_blanks(item.find("HCVTarget_YOB").text))
             subject_map_exceptions_csv.write("%s"%line)
         subject_map_exceptions_csv.close()
 
         parse_site_details_and_send(site_catalog_file, subject_map_exceptions_file, 'email', settings)
-        if do_keep_gen_files :
-            print ' * Keeping the temporary file: ' + subject_map_exceptions_file
-        else :
-            print ' * Removing the temporary file: ' + subject_map_exceptions_file
+        if do_keep_gen_files:
+            logging.info('Keeping the temporary file: ' + subject_map_exceptions_file)
+        else:
+            logging.info('Removing the temporary file: ' + subject_map_exceptions_file)
             os.remove(subject_map_exceptions_file)
+
+
+def configure_logging(verbose=False):
+    """Configures the Logger"""
+    application = appdirs.AppDirs(appname='research-subject-mapper', appauthor='University of Florida')
+
+    # create logger for our application
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.DEBUG)
+    logger = logging.getLogger(application.appname)
+
+    # create a console handler
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.DEBUG if verbose else logging.INFO)
+    console_handler.setFormatter(logging.Formatter('%(relativeCreated)+15s %(name)s - %(levelname)s: %(message)s'))
+    root_logger.addHandler(console_handler)
+
+    # make sure we can write to the log
+    gsm_lib.makedirs(application.user_log_dir)
+    filename = os.path.join(application.user_log_dir, application.appname + '.log')
+
+    # create a file handler
+    file_handler = None
+    try:
+        file_handler = logging.FileHandler(filename)
+    except IOError:
+        logger.exception('Could not open file for logging "%s"', filename)
+
+    if file_handler:
+        file_handler.setLevel(logging.DEBUG)
+        file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s'))
+        logger.debug('Log file will be "%s"', filename)
+        root_logger.addHandler(file_handler)
+    else:
+        logger.warning('File logging has been disabled.')
+
+    return logger
 
 
 '''
