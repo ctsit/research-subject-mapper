@@ -28,7 +28,9 @@ from redcap import Project, RedcapError
 import os
 import re
 import logging
-
+import sys
+logging.getLogger().setLevel(logging.getLevelName('INFO'))
+    
 GSM_REQ_FIELDS = ['smtp_host_for_outbound_mail','system_log_file','send_email','receiver_email','redcap_uri','token']
 GSM_REQ_FILES = ['source_data_schema_file', 'site_catalog']
 
@@ -108,7 +110,6 @@ def main():
 def check_redcap_connection(redcap_uri,redcap_token):
     try:
         project = Project(redcap_uri,redcap_token)
-        print "Successfully established connection with REDCap instance"
         logging.info("Successfully established connection with REDCap instance")
     except RedcapError as e:
         logging.info(e.message)
@@ -120,26 +121,31 @@ def read_settings():
     try:
         settings.read(config_file)
         settings.set_attributes()
-    except IOError as e:
+    except:
         logging.warning("Unable to read settings.ini at the location provided")
     settings_dictionary = {}
     settings_dict = vars(settings).iteritems()
     for key, value in settings_dict:
         if not key.startswith('_'):
             settings_dictionary[key] = value
+    logging.info('Settings.ini file read successfull.')
     return settings_dictionary
 
 #checking for required fields and required files in the settings.ini
 def validate_settings(settings_dict):
     config_checker = ConfigurationChecker()
+    logging.info("Validating configurations set in settings.ini")
     for key, value in settings_dict.iteritems():
         if key in REQ_FIELDS and key not in REQ_FILES:
-            config_checker.add_required_setting(key,value,required=True)
+            if config_checker.add_required_setting(key,value,required=True):
+                logging.info("Found valid value \'"+value+"\' for "+key)
             continue
         if key in REQ_FILES:
-            config_checker.add_req_file_settings(key,value)
+            if config_checker.add_req_file_settings(key,value):
+                logging.info("Found file \'"+key+"\' at location "+key)
             continue
         config_checker.add_required_setting(key,value)
+        logging.info("Setting value "+value+" for \'"+key+"\' ...")
     settings_dictionary = config_checker.settings
     return settings_dictionary
 
@@ -149,7 +155,7 @@ def validate_xmls(xmlfilename, xsdfilename):
                            + xsdfilename)
     else:
         xsdfilehandle = open(xsdfilename, 'r')
-        logger.info(xmlfilename + " Xsd file read in. ")
+        logging.info(xmlfilename + " Xsd file read in. ")
 
     xsd_tree = etree.parse(xsdfilename)
     xsd = etree.XMLSchema(xsd_tree)
@@ -159,7 +165,7 @@ def validate_xmls(xmlfilename, xsdfilename):
                            + xmlfilename)
     else:
         xmlfilehandle = open(xmlfilename, 'r')
-        logger.info(xmlfilename +
+        logging.info(xmlfilename +
                     " XML file read in. " +
                     str(sum(1 for line in xmlfilehandle)) +
                     " total lines in file.")
@@ -171,6 +177,7 @@ def validate_xmls(xmlfilename, xsdfilename):
 
 def get_settings_interactively(settings_dict):
     config_checker = ConfigurationChecker()
+    logging.info("Default values are displayed in [] if available. Press Enter to proceed with default values")
     for key in REQ_FIELDS:
         is_valid_value = False
         try:
@@ -180,10 +187,14 @@ def get_settings_interactively(settings_dict):
                 if not value:
                     value = value_on_file
                 is_valid_value = config_checker.add_required_setting(key,value,required=True)
+                if is_valid_value:
+                    logging.info("Value \'"+value+"\' entered for "+key+" is valid")
         except KeyError:
             while not is_valid_value:
                 value = raw_input("Please enter valid value for "+key+":")
                 is_valid_value = config_checker.add_required_setting(key,value,required=True)
+                if is_valid_value:
+                    logging.info("Value \'"+value+"\' entered for "+key+" is valid")
     for key in REQ_FILES:
         is_file_found = False
         try:
@@ -193,10 +204,14 @@ def get_settings_interactively(settings_dict):
                 if not value:
                     value = value_on_file
                 is_file_found = config_checker.add_req_file_settings(key,value)
+                if is_file_found:
+                    logging.info("File "+key+" found at \'"+value+"\'")
         except KeyError:
             while not is_file_found:
                 value = raw_input("Please provide either Fully-Qualified path or Relative path to the file "+key+":")
                 is_file_found = config_checker.add_req_file_settings(key,value,is_full_path=True)
+                if is_file_found:
+                    logging.info("File "+key+" found at \'"+value+"\'")
     return config_checker.settings
 
 class ConfigurationChecker:
