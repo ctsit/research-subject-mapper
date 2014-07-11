@@ -164,3 +164,11 @@ def get_site_details_as_dict(file_path, site_type):
 
     return data
 
+
+def makedirs(path):
+    """Like os.makedirs() but suppresses error if path already exists."""
+    try:
+        os.makedirs(path)
+    except os.error:
+        if not os.path.exists(path):
+            raise

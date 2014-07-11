@@ -132,7 +132,7 @@ def configure_logging(verbose=False):
     logger.addHandler(console_handler)
 
     # make sure we can write to the log
-    makedirs(application.user_log_dir)
+    gsm_lib.makedirs(application.user_log_dir)
     filename = os.path.join(application.user_log_dir, application.appname + '.log')
 
     # create a file handler
@@ -151,15 +151,6 @@ def configure_logging(verbose=False):
         logger.warning('File logging has been disabled.')
 
     return logger
-
-
-def makedirs(path):
-    """Like os.makedirs() but suppresses error if path already exists."""
-    try:
-        os.makedirs(path)
-    except os.error:
-        if not os.path.exists(path):
-            raise
 
 
 def parse_site_details_and_send(site_catalog_file, subject_map_input, logger, settings, keep_files):
