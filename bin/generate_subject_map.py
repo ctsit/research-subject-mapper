@@ -54,7 +54,7 @@ def main():
 
     # read settings options
     settings = SimpleConfigParser.SimpleConfigParser()
-    settings.read(configuration_directory + 'settings.ini')
+    settings.read(os.path.join(configuration_directory, 'settings.ini'))
     settings.set_attributes()
     gsm_lib.read_config(configuration_directory, 'settings.ini', settings)
     site_catalog_file = os.path.join(configuration_directory, settings.site_catalog)
@@ -75,7 +75,7 @@ def main():
     person_index_data = transform(xml_tree)
 
     # # # retrieve smi.xml from the sftp server
-    smi_path = get_smi_and_parse(site_catalog_file, settings)
+    smi_path = get_smi_and_parse(site_catalog_file, settings, logger)
     try:
         smi_data = etree.parse(smi_path)
     except IOError:
@@ -157,11 +157,11 @@ def main():
         raise
 
     # send the subject_map.csv to EMR team (sftp server)
-    parse_site_details_and_send(site_catalog_file, subject_map_file, 'sftp', settings)
+    parse_site_details_and_send(site_catalog_file, subject_map_file, 'sftp', settings, logger)
     if do_keep_gen_files:
-        logging.info('Keeping the temporary file: ' + subject_map_file)
+        logger.info('Keeping the temporary file: ' + subject_map_file)
     else:
-        logging.info('Removing the temporary file: ' + subject_map_file)
+        logger.info('Removing the temporary file: ' + subject_map_file)
         os.remove(subject_map_file)
 
     # send subject_map_exceptions.csv as email attachment
@@ -183,10 +183,29 @@ def main():
 
         parse_site_details_and_send(site_catalog_file, subject_map_exceptions_file, 'email', settings)
         if do_keep_gen_files:
-            logging.info('Keeping the temporary file: ' + subject_map_exceptions_file)
+            logger.info('Keeping the temporary file: ' + subject_map_exceptions_file)
         else:
-            logging.info('Removing the temporary file: ' + subject_map_exceptions_file)
+            logger.info('Removing the temporary file: ' + subject_map_exceptions_file)
             os.remove(subject_map_exceptions_file)
+
+
+def parse_args():
+    """Parses command line arguments"""
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', required=False,
+                        dest='configuration_directory_path',
+                        default=proj_root + 'config/',
+                        help='Specify the path to the configuration directory')
+
+    parser.add_argument('-k', '--keep', required=False,
+                        default=False, action='store_true',
+                        help='keep files generated during execution')
+
+    parser.add_argument('-v', '--verbose', required=False,
+                        default=False, action='store_true',
+                        help='increase verbosity of output')
+
+    return vars(parser.parse_args())
 
 
 def configure_logging(verbose=False):
@@ -232,12 +251,10 @@ Parse the site details from site catalog and
     OR
     email the exceptions file
 '''
-def parse_site_details_and_send(site_catalog_file, local_file_path, action, settings):
+def parse_site_details_and_send(site_catalog_file, local_file_path, action, settings, logger):
     if not os.path.exists(local_file_path):
-        raise GSMLogger().LogException("Error: subject map file "+local_file_path+" file not found")
-
-    if not os.path.exists(site_catalog_file):
-        raise GSMLogger().LogException("Error: site_catalog xml file not found at: " + site_catalog_file)
+        logging.error("subject map file "+local_file_path+" file not found")
+        raise IOError("subject map file "+local_file_path+" file not found")
 
     dikt = gsm_lib.get_site_details_as_dict(site_catalog_file, 'data_destination')
     site_uri = dikt['site_URI']
@@ -254,16 +271,14 @@ def parse_site_details_and_send(site_catalog_file, local_file_path, action, sett
     if action == 'sftp':
         # Pick up the subject_map.csv and put it in the specified sftp server's remote path
         info = '\nSending file: [ %s] to host %s:%s %s' % (local_file_path, host, port, site_remotepath)
-        print info
-        gsmlogger.logger.info(info)
+        logger.info(info)
 
         info = 'Errors will be reported to: ' + site_contact_email
-        print info
-        gsmlogger.logger.info(info)
+        logger.info(info)
 
         # put the subject map csv file
-        remote_directory = site_remotepath.rsplit("/", 1)[0] + "/"
-        remote_file_name = site_remotepath.split("/")[-1]
+        remote_directory = os.path.dirname(site_remotepath)
+        remote_file_name = os.path.basename(site_remotepath)
 
         sftp_instance = SFTPClient(host, sender_email, 
                                     port,
@@ -278,7 +293,7 @@ def parse_site_details_and_send(site_catalog_file, local_file_path, action, sett
     elif action == 'email':
         # Send the subject_map_exceptions.csv to the contact email address as an attachment
         info = '\nSending file: [ %s ] as email attachement to: %s' % (local_file_path, site_contact_email)
-        gsmlogger.logger.info(info)
+        logger.info(info)
 
         # @TODO change the mail body as required
         mail_body = 'Hi, \n this mail contains attached exceptions.csv file.'
@@ -286,39 +301,15 @@ def parse_site_details_and_send(site_catalog_file, local_file_path, action, sett
                     site_contact_email, mail_body, [local_file_path])
     else :
         info = 'Invalid option. Either sftp/email should be used.'
-        print info
-        gsmlogger.logger.warn(info)
+        logger.warn(info)
 
     return
 
 
-def parse_args():
-    """Parses command line arguments"""
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-c', required=False,
-                        dest='configuration_directory_path',
-                        default=proj_root + 'config/',
-                        help='Specify the path to the configuration directory')
-
-    parser.add_argument('-k', '--keep', required=False,
-                        default=False, action='store_true',
-                        help='keep files generated during execution')
-
-    parser.add_argument('-v', '--verbose', required=False,
-                        default=False, action='store_true',
-                        help='increase verbosity of output')
-
-    return vars(parser.parse_args())
-
-
-def get_smi_and_parse(site_catalog_file, settings):
+def get_smi_and_parse(site_catalog_file, settings, logger):
     '''Function to get the smi files from sftp server
     The smi files are picked up according to the details in the site-catalog.xml
     '''
-    if not os.path.exists(site_catalog_file):
-        raise GSMLogger().LogException("Error: site_catalog xml file not found at \
-            file not found at "+ site_catalog_file)
-
     dikt = gsm_lib.get_site_details_as_dict(site_catalog_file, 'data_source')
     site_uri = dikt['site_URI']
     host, port = gsm_lib.parse_host_and_port(site_uri)
@@ -330,22 +321,16 @@ def get_smi_and_parse(site_catalog_file, settings):
     site_contact_email  = dikt['site_contact_email']
     sender_email = settings.sender_email
 
-    file_name = site_remotepath.split("/")[-1]
-    site_localpath = configuration_directory + file_name
+    file_name = os.path.basename(site_remotepath)
+    site_localpath = os.path.join(configuration_directory, file_name)
 
     # Pick up the smi file from the server and place it in the proj_root
-    info = 'Retrieving file: %s from %s:%s' % (site_remotepath, host, port)
-    print info
-    gsmlogger.logger.info(info)
-
-    info = 'Errors will be reported to: ' + site_contact_email
-    print info
-    gsmlogger.logger.info(info)
+    logger.info('Retrieving file: %s from %s:%s', site_remotepath, host, port)
+    logger.info('Errors will be reported to: ' + site_contact_email)
 
     sftp_instance = SFTPClient(host, sender_email,port, site_uname, site_password, site_key_path)
     sftp_instance.get_file_from_uri(site_remotepath, site_localpath, site_contact_email)
     return site_localpath
-
 
 
 if __name__ == "__main__":

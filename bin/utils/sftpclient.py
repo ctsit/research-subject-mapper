@@ -20,7 +20,7 @@ class SFTPClient:
 
     def send_file_to_uri(self, remote_path, file_name, local_path, contact_email):
         try:
-            self.put(local_path, remote_path+file_name)
+            self.put(local_path, os.path.join(remote_path, file_name))
         except Exception, e:
             # Email error to the concerned authority
             print 'Error sending file to %s' % self._hostname

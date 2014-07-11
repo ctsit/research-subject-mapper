@@ -170,7 +170,7 @@ def get_site_details_as_dict(file_path, site_type):
     site = sites_list.xpath("(/sites_list/site[@type='" + site_type + "'])[1]")[0]
     data['site_URI']            = handle_blanks( site.findtext('site_URI') )
     data['site_uname']          = handle_blanks( site.findtext('site_uname') )
-    data['site_password']       = handle_blanks( site.findtext('site_password') )
+    data['site_password']       = site.findtext('site_password')
     data['site_remotepath']     = handle_blanks( site.findtext('site_remotepath') )
     data['site_contact_email']  = handle_blanks( site.findtext('site_contact_email') )
     data['site_key_path']       = handle_blanks( site.findtext('site_key_path') )
