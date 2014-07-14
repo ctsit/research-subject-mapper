@@ -40,6 +40,10 @@ import SimpleConfigParser
 # Command line default argument values
 default_configuration_directory = proj_root + "config/"
 default_do_keep_gen_files = None
+
+# Defaults for optional settings.ini parameters
+DEFAULT_LOG_FILE = "gsmi_log/gsmi.log"
+
 def main():
     global configuration_directory
     global do_keep_gen_files
@@ -70,12 +74,45 @@ def main():
     settings.set_attributes()
     gsm_lib.read_config(configuration_directory, 'settings.ini', settings)
     site_catalog_file = configuration_directory+settings.site_catalog
-    system_log_file = settings.system_log_file
+
+    if not settings.hasoption('system_log_file') or \
+    settings.system_log_file == "":
+        system_log_file = DEFAULT_LOG_FILE
+    else:
+        system_log_file = settings.system_log_file
 
     # Configure logging
     global gsmlogger
     gsmlogger = GSMLogger()
     gsmlogger.configure_logging(system_log_file)
+
+    # Check if xml_formatting_transform.xsl file is present/properly set in
+    # setting.ini
+    message2 = "Please set it with appropriate value and restart execution. \
+For assistance refer config-example-gsm-input/settings.ini.\
+ \nProgram will now terminate..."
+    if not settings.hasoption('xml_formatting_tranform_xsl'):
+        message = "Required parameter xml_formatting_tranform_xsl is missing \
+in settings.ini. " + message2
+        print message
+        gsmlogger.LogException(message)
+        sys.exit()
+    elif settings.xml_formatting_tranform_xsl == "":
+        message = "Required parameter xml_formatting_tranform_xsl does not \
+have a value in settings.ini. " + message2
+        print message
+        gsmlogger.LogException(message)
+        sys.exit()
+    elif not os.path.exists(configuration_directory + \
+        settings.xml_formatting_tranform_xsl):
+        message = "Required file xml_formatting_tranform.xsl does not exist \
+in " + configuration_directory + ". Please make sure this file is included in \
+the configuration directory and restart execution. For assistance refer \
+config-example-gsm-input/xml_formatting_tranform.xsl.\
+ \nProgram will now terminate..."
+        print message
+        gsmlogger.LogException(message)
+        sys.exit()
 
     # Initialize Redcap Interface
     rt = redcap_transactions()
