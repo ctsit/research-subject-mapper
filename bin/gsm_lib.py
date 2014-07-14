@@ -77,21 +77,21 @@ def read_config(configuration_directory, filename, settings):
         raise GSMLogger().LogException("Invalid path specified for conf file: " + filename)
 
     # test for required parameters
-    required_parameters = ['source_data_schema_file', 'site_catalog']
+    required_parameters = ['source_data_schema_file', 'site_catalog', 'sender_email']
 
     for parameter in required_parameters:
         if not settings.hasoption(parameter):
-            message = "read_config: required parameter, " + parameter  + "', \
+            message = "read_config: required parameter, '" + parameter  + "', \
 is missing in " + conf_file + ". Please set it with appropriate value. For \
-assistance refer settings.ini in config-example folder. Program will now \
+assistance refer settings.ini in config-example folder. \nProgram will now \
 terminate..."
             print message
             GSMLogger().LogException(message)
             sys.exit()
         elif settings.getoption(parameter) == "":
-            message = "read_config: required parameter, " + parameter  + "', \
+            message = "read_config: required parameter, '" + parameter  + "', \
 is not set in " + conf_file + ". Please set it with appropriate value. For \
-assistance refer settings.ini in config-example folder. Program will now \
+assistance refer settings.ini in config-example folder. \nProgram will now \
 terminate..."
             print message
             GSMLogger().LogException(message)
@@ -103,8 +103,10 @@ terminate..."
         if settings.hasoption(item):
             if not os.path.exists(configuration_directory + settings.getoption(item)):
                 message = "read_config: " + item + " file, '" + \
-                settings.getoption(item) + "', specified in " + conf_file + \
-                " does not exist"
+                settings.getoption(item) + "', specified in " + conf_file + " \
+does not exist. Please make sure this file is included in " + \
+configuration_directory + ". For assistance refer settings.ini in \
+config-example folder. \nProgram will now terminate..."
                 print message
                 GSMLogger().LogException(message)
                 sys.exit()
