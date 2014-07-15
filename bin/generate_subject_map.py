@@ -32,13 +32,6 @@ goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir) + '/'
 
 
-# Command line default argument values
-default_configuration_directory = proj_root + "config/"
-default_do_keep_gen_files = None
-
-# Defaults for optional settings.ini parameters
-DEFAULT_LOG_FILE = "gsm_log/gsm.log"
-
 def main():
     global configuration_directory
 

@@ -14,16 +14,12 @@ __version__     = "0.1"
 __email__       = ""
 __status__      = "Development"
 
-from lxml import etree
-import pprint
-import os
-import sys
 import datetime
-import contextlib
 import tempfile
-import shutil
-from urlparse import urlparse
 import logging
+import os
+from lxml import etree
+
 
 # This addresses the issues with relative paths
 file_dir = os.path.dirname(os.path.realpath(__file__))
@@ -87,32 +83,32 @@ def read_config(configuration_directory, filename, settings):
 
     for parameter in required_parameters:
         if not settings.hasoption(parameter):
-            message = "read_config: required parameter, '" + parameter  + "', \
-is missing in " + conf_file + ". Please set it with appropriate value. For \
-assistance refer settings.ini in config-example folder. \nProgram will now \
-terminate..."
+            message = "read_config: required parameter, \'{0}\', is missing " \
+                      "in {1}. Please set it with appropriate value. For " \
+                      "assistance refer settings.ini in config-example folder." \
+                      "\nProgram will now \nterminate...".format(parameter, conf_file)
             logger.error(message)
             raise ConfigurationError(message)
         elif settings.getoption(parameter) == "":
-            message = "read_config: required parameter, '" + parameter  + "', \
-is not set in " + conf_file + ". Please set it with appropriate value. For \
-assistance refer settings.ini in config-example folder. \nProgram will now \
-terminate..."
+            message = "read_config: required parameter, \'{0}\', is not set " \
+                      "in {1}. Please set it with appropriate value. For " \
+                      "assistance refer settings.ini in config-example folder." \
+                      "\nProgram will now terminate...".format(parameter, conf_file)
             logger.error(message)
             raise ConfigurationError(message)
 
     # test for required files but only for the parameters that are set
     files = ['source_data_schema_file', 'site_catalog']
     for item in files:
-        if settings.hasoption(item):
-            if not os.path.exists(os.path.join(configuration_directory, settings.getoption(item))):
-                message = "read_config: " + item + " file, '" + \
-                settings.getoption(item) + "', specified in " + conf_file + " \
-does not exist. Please make sure this file is included in " + \
-configuration_directory + ". For assistance refer settings.ini in \
-config-example folder. \nProgram will now terminate..."
-                logger.error(message)
-                raise ConfigurationError(message)
+        if settings.hasoption(item) and not os.path.exists(
+                os.path.join(configuration_directory, settings.getoption(item))):
+            message = "read_config: {0} file, '{1}', specified in {2} does not " \
+                      "exist. Please make sure this file is included in {3}. " \
+                      "For assistance refer settings.ini in config-example folder." \
+                      "\nProgram will now terminate..."\
+                .format(item, settings.getoption(item), conf_file, configuration_directory)
+            logger.error(message)
+            raise ConfigurationError(message)
 
 
 '''

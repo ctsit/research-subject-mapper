@@ -48,25 +48,25 @@ def main():
 
     # Check if xml_formatting_transform.xsl file is present/properly set in
     # setting.ini
-    message2 = "Please set it with appropriate value and restart execution. \
-For assistance refer config-example-gsm-input/settings.ini.\
- \nProgram will now terminate..."
+    message2 = "Please set it with appropriate value and restart execution. " \
+               "For assistance refer config-example-gsm-input/settings.ini." \
+               "\nProgram will now terminate..."
     if not settings.hasoption('xml_formatting_tranform_xsl'):
-        message = "Required parameter xml_formatting_tranform_xsl is missing \
-in settings.ini. " + message2
+        message = "Required parameter xml_formatting_tranform_xsl is missing " \
+                  "in settings.ini. " + message2
         logger.error(message)
         raise gsm_lib.ConfigurationError(message)
     elif settings.xml_formatting_tranform_xsl == "":
-        message = "Required parameter xml_formatting_tranform_xsl does not \
-have a value in settings.ini. " + message2
+        message = "Required parameter xml_formatting_tranform_xsl does not " \
+                  "have a value in settings.ini. " + message2
         logger.error(message)
         raise gsm_lib.ConfigurationError(message)
     elif not os.path.exists(os.path.join(configuration_directory, settings.xml_formatting_tranform_xsl)):
-        message = "Required file xml_formatting_tranform.xsl does not exist \
-in " + configuration_directory + ". Please make sure this file is included in \
-the configuration directory and restart execution. For assistance refer \
-config-example-gsm-input/xml_formatting_tranform.xsl.\
- \nProgram will now terminate..."
+        message = "Required file xml_formatting_tranform.xsl does not exist " \
+                  "in {0}. Please make sure this file is included in the " \
+                  "configuration directory and restart execution. For " \
+                  "assistance refer config-example-gsm-input/xml_formatting_tranform.xsl." \
+                  "\nProgram will now terminate...".format(configuration_directory)
         logger.error(message)
         raise gsm_lib.ConfigurationError(message)
 
