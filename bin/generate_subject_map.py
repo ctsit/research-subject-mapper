@@ -132,11 +132,11 @@ def main():
         subject_map_csv.write("%s" % '"research_subject_id","start_date","end_date","mrn","facility_code"\n')
 
         for item in subjectmap_root.iter("item"):
-            line = '"{0}","{1}","{2}","{3}","{4}"\n'.format( \
-                gsm_lib.handle_blanks(item.findtext("research_subject_id")), \
-                gsm_lib.handle_blanks(item.findtext("start_date")), \
-                gsm_lib.handle_blanks(item.findtext("end_date")), \
-                gsm_lib.handle_blanks(item.findtext("mrn")), \
+            line = '"{0}","{1}","{2}","{3}","{4}"\n'.format(
+                gsm_lib.handle_blanks(item.findtext("research_subject_id")),
+                gsm_lib.handle_blanks(item.findtext("start_date")),
+                gsm_lib.handle_blanks(item.findtext("end_date")),
+                gsm_lib.handle_blanks(item.findtext("mrn")),
                 gsm_lib.handle_blanks(item.findtext("facility_code")))
             subject_map_csv.write("%s" % line)
 
