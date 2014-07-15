@@ -39,12 +39,36 @@ def main():
     configuration_directory = os.path.abspath(args['configuration_directory_path'])
 
     # Configure logging
-    logger = configure_logging(args['verbose'])
+    logger = configure_logging(args['verbose'], args['logfile'])
 
     settings = SimpleConfigParser.SimpleConfigParser()
     settings.read(os.path.join(configuration_directory, 'settings.ini'))
     settings.set_attributes()
     gsm_lib.read_config(configuration_directory, 'settings.ini', settings)
+
+    # Check if xml_formatting_transform.xsl file is present/properly set in
+    # setting.ini
+    message2 = "Please set it with appropriate value and restart execution. \
+For assistance refer config-example-gsm-input/settings.ini.\
+ \nProgram will now terminate..."
+    if not settings.hasoption('xml_formatting_tranform_xsl'):
+        message = "Required parameter xml_formatting_tranform_xsl is missing \
+in settings.ini. " + message2
+        logger.error(message)
+        raise gsm_lib.ConfigurationError(message)
+    elif settings.xml_formatting_tranform_xsl == "":
+        message = "Required parameter xml_formatting_tranform_xsl does not \
+have a value in settings.ini. " + message2
+        logger.error(message)
+        raise gsm_lib.ConfigurationError(message)
+    elif not os.path.exists(os.path.join(configuration_directory, settings.xml_formatting_tranform_xsl)):
+        message = "Required file xml_formatting_tranform.xsl does not exist \
+in " + configuration_directory + ". Please make sure this file is included in \
+the configuration directory and restart execution. For assistance refer \
+config-example-gsm-input/xml_formatting_tranform.xsl.\
+ \nProgram will now terminate..."
+        logger.error(message)
+        raise gsm_lib.ConfigurationError(message)
 
     # Initialize Redcap Interface
     rt = redcap_transactions()
@@ -115,10 +139,14 @@ def parse_args():
                         default=False, action='store_true',
                         help='increase verbosity of output')
 
+    parser.add_argument('-l', '--logfile', required=False,
+                        default=None,
+                        help='location of the log file')
+
     return vars(parser.parse_args())
 
 
-def configure_logging(verbose=False):
+def configure_logging(verbose=False, logfile=None):
     """Configures the Logger"""
     application = appdirs.AppDirs(appname='research-subject-mapper', appauthor='University of Florida')
 
@@ -133,9 +161,12 @@ def configure_logging(verbose=False):
     console_handler.setFormatter(logging.Formatter('%(relativeCreated)+15s %(name)s - %(levelname)s: %(message)s'))
     root_logger.addHandler(console_handler)
 
-    # make sure we can write to the log
-    gsm_lib.makedirs(application.user_log_dir)
-    filename = os.path.join(application.user_log_dir, application.appname + '.log')
+    if logfile is None:
+        # make sure we can write to the log
+        gsm_lib.makedirs(application.user_log_dir)
+        filename = os.path.join(application.user_log_dir, application.appname + '.log')
+    else:
+        filename = logfile
 
     # create a file handler
     file_handler = None

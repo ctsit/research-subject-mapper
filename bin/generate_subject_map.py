@@ -36,6 +36,8 @@ proj_root = os.path.abspath(goal_dir) + '/'
 default_configuration_directory = proj_root + "config/"
 default_do_keep_gen_files = None
 
+# Defaults for optional settings.ini parameters
+DEFAULT_LOG_FILE = "gsm_log/gsm.log"
 
 def main():
     global configuration_directory
@@ -46,7 +48,7 @@ def main():
     do_keep_gen_files = args['keep']
 
     # Configure logging
-    logger = configure_logging(args['verbose'])
+    logger = configure_logging(args['verbose'], args['logfile'])
 
     # read settings options
     settings = SimpleConfigParser.SimpleConfigParser()
@@ -202,10 +204,14 @@ def parse_args():
                         default=False, action='store_true',
                         help='increase verbosity of output')
 
+    parser.add_argument('-l', '--logfile', required=False,
+                        default=None,
+                        help='location of the log file')
+
     return vars(parser.parse_args())
 
 
-def configure_logging(verbose=False):
+def configure_logging(verbose=False, logfile=None):
     """Configures the Logger"""
     application = appdirs.AppDirs(appname='research-subject-mapper', appauthor='University of Florida')
 
@@ -220,9 +226,12 @@ def configure_logging(verbose=False):
     console_handler.setFormatter(logging.Formatter('%(relativeCreated)+15s %(name)s - %(levelname)s: %(message)s'))
     root_logger.addHandler(console_handler)
 
-    # make sure we can write to the log
-    gsm_lib.makedirs(application.user_log_dir)
-    filename = os.path.join(application.user_log_dir, application.appname + '.log')
+    if logfile is None:
+        # make sure we can write to the log
+        gsm_lib.makedirs(application.user_log_dir)
+        filename = os.path.join(application.user_log_dir, application.appname + '.log')
+    else:
+        filename = logfile
 
     # create a file handler
     file_handler = None

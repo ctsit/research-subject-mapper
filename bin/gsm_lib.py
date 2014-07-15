@@ -87,7 +87,17 @@ def read_config(configuration_directory, filename, settings):
 
     for parameter in required_parameters:
         if not settings.hasoption(parameter):
-            message = "Required parameter '{0}' is not set in '{1}'".format(parameter, conf_file)
+            message = "read_config: required parameter, '" + parameter  + "', \
+is missing in " + conf_file + ". Please set it with appropriate value. For \
+assistance refer settings.ini in config-example folder. \nProgram will now \
+terminate..."
+            logger.error(message)
+            raise ConfigurationError(message)
+        elif settings.getoption(parameter) == "":
+            message = "read_config: required parameter, '" + parameter  + "', \
+is not set in " + conf_file + ". Please set it with appropriate value. For \
+assistance refer settings.ini in config-example folder. \nProgram will now \
+terminate..."
             logger.error(message)
             raise ConfigurationError(message)
 
@@ -96,11 +106,13 @@ def read_config(configuration_directory, filename, settings):
     for item in files:
         if settings.hasoption(item):
             if not os.path.exists(os.path.join(configuration_directory, settings.getoption(item))):
-                message = "{0} file, '{1}', specified in {2}, does not exist".format(
-                    item, settings.getoption(item), conf_file)
+                message = "read_config: " + item + " file, '" + \
+                settings.getoption(item) + "', specified in " + conf_file + " \
+does not exist. Please make sure this file is included in " + \
+configuration_directory + ". For assistance refer settings.ini in \
+config-example folder. \nProgram will now terminate..."
                 logger.error(message)
                 raise ConfigurationError(message)
-
 
 
 '''

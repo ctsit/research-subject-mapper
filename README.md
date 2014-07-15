@@ -73,3 +73,27 @@ If this tool is being run at the site, one can just provide site ftp details in 
 #### To run generate_subject_map.py tool:
 Run `gsm -c <FULL_PATH_TO_CONFIG_DIRECTORY> -k <YES_OR_NO_TO_KEEP_GENERATED_FILES>` (if a directory named config is already setup in the parent directory of generate_subject_map_input.py, one need not provide the path to config directory in -c option)
 
+
+### About required and optional configuration parameters for generate_subject_map.py
+------------------------------------------------------------------------------------
+
+Following parameters are required to have a value in settings.ini:
+ - site_catalog
+ - source_data_schema_file
+ - sender_email
+The program terminates if they are missing or do not have a value in setings.ini. A message about this is displayed to the user before the program terminates. The same is also written to the log file.
+
+The parameter system_log_file in settings.ini is optional. If it is missing or does not have a value, the default value 'gsm_log/gsm.log' will be used.
+
+
+### About required and optional configuration parameters for generate_subject_map_input.py
+------------------------------------------------------------------------------------
+
+Following parameters are required to have a value in settings.ini:
+ - site_catalog
+ - source_data_schema_file
+ - sender_email
+ - xml_formatting_tranform_xsl
+The program terminates if they are missing or do not have a value in setings.ini. A message about this is displayed to the user before the program terminates. The same is also written to the log file.
+
+The parameter system_log_file in settings.ini is optional. If it is missing or does not have a value, the default value 'gsmi_log/gsmi.log' will be used.

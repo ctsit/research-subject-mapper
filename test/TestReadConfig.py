@@ -14,12 +14,10 @@ class TestReadConfig(unittest.TestCase):
     def setUp(self):
         self.setupFolder = tempfile.mkdtemp() + "/"
         self.setupFile = "settings.ini"
-        self.input = """smtp_host_for_outbound_mail = smtp.example.org
-system_log_file = log/rsm.log
+        self.input = """system_log_file = log/rsm.log
 source_data_schema_file = source_data_schema.xml
 site_catalog = site-catalog.xml
-redcap_uri = https://example.org/redcap/api/
-token = ABCDEF878D219CFA5D3ADF7F9AB12345"""
+sender_email = please-do-not-reply@ufl.edu"""
         self.setupFileFullPath = self.setupFolder + self.setupFile
         f = open(self.setupFileFullPath, 'w')
         f.write(self.input)
@@ -40,13 +38,7 @@ token = ABCDEF878D219CFA5D3ADF7F9AB12345"""
         self.assertEqual(settings.system_log_file, "log/rsm.log")
         self.assertEqual(settings.source_data_schema_file,
             "source_data_schema.xml")
-        self.assertEqual(settings.site_catalog, "site-catalog.xml")
-        self.assertEqual(settings.redcap_uri,
-            "https://example.org/redcap/api/")
-        self.assertEqual(settings.token,
-            "ABCDEF878D219CFA5D3ADF7F9AB12345")
-        self.assertEqual(settings.smtp_host_for_outbound_mail,
-            "smtp.example.org")
+        self.assertEqual(settings.site_catalog, "site-catalog.xml")        
 
     def tearDown(self):
         os.unlink(self.setupFileFullPath)
