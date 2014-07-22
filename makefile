@@ -35,12 +35,12 @@ devconfig:
 test_gsm:
 	@test -d gsm-devconfig || echo "Please create the 'gsm-devconfig' folder first"
 	@echo "Executing bin/generate_subject_map.py ..."
-	python bin/generate_subject_map.py -c gsm-devconfig -k yes
+	python bin/generate_subject_map.py -c gsm-devconfig -k -v
 
 test_gsmi:
 	@test -d gsmi-devconfig || echo "Please create the 'gsmi-devconfig' folder first"
 	@echo 'Executing bin/generate_subject_map_input.py ...'
-	python bin/generate_subject_map_input.py -c gsmi-devconfig -k yes
+	python bin/generate_subject_map_input.py -c gsmi-devconfig -k -v 
 
 coverage:
 	which figleaf || sudo easy_install figleaf
@@ -54,6 +54,7 @@ tests:
 	python test/TestSuite.py
 
 clean:
+	find . -type f -name *.pyc -print | xargs rm -f
 	rm -rf log/gsm.log
 	rm -rf log/gsmi.log
 	rm -rf out_*
