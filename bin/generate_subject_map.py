@@ -6,12 +6,10 @@ subject mapping files based on inputs from REDCap projects
 
 """
 
-__authors__ = "Mohan Das Katragadda"
-__copyright__ = "Copyright 2014, University of Florida"
-__license__ = "BSD 3-Clause"
-__version__ = "0.1"
-__email__ = "mohan88@ufl.edu"
-__status__ = "Development"
+__author__      = "CTS-IT team"
+__copyright__   = "Copyright 2014, University of Florida"
+__license__     = "BSD 3-Clause"
+__version__     = "0.1"
 
 import os
 import argparse
@@ -22,9 +20,9 @@ import appdirs
 
 import gsm_lib
 from utils.sftpclient import SFTPClient
-from utils.email_transactions import email_transactions
+from utils.emailsender import EmailProps
+from utils.emailsender import EmailSender
 from utils.redcap_transactions import redcap_transactions
-from utils import SimpleConfigParser
 
 # This addresses the issues with relative paths
 file_dir = os.path.dirname(os.path.realpath(__file__))
@@ -43,11 +41,9 @@ def main():
     # Configure logging
     logger = configure_logging(args['verbose'], args['logfile'])
 
-    # read settings options
-    settings = SimpleConfigParser.SimpleConfigParser()
-    settings.read(os.path.join(configuration_directory, 'settings.ini'))
-    settings.set_attributes()
-    gsm_lib.read_config(configuration_directory, 'settings.ini', settings)
+    conf_file = os.path.join(configuration_directory, 'settings.ini')
+    settings = gsm_lib.get_settings(conf_file)
+    gsm_lib.read_config(configuration_directory, conf_file, settings)
     site_catalog_file = os.path.join(configuration_directory, settings.site_catalog)
 
     # Initialize Redcap Interface
@@ -268,6 +264,7 @@ def parse_site_details_and_send(site_catalog_file, local_file_path, action, sett
     site_contact_email = dikt['site_contact_email']
     sender_email = settings.sender_email
 
+
     # is it a file transfer or attachment email?
     if action == 'sftp':
         # Pick up the subject_map.csv and put it in the specified sftp server's remote path
@@ -281,25 +278,43 @@ def parse_site_details_and_send(site_catalog_file, local_file_path, action, sett
         remote_directory = os.path.dirname(site_remotepath)
         remote_file_name = os.path.basename(site_remotepath)
 
-        sftp_instance = SFTPClient(host, sender_email,
+        sftp_instance = SFTPClient(host,
                                    port,
                                    site_uname,
                                    site_password,
                                    site_key_path)
-        sftp_instance.send_file_to_uri(remote_directory,
-                                       remote_file_name,
-                                       local_file_path,
-                                       site_contact_email)
+
+        email_props_sftp = EmailProps(
+            settings.smtp_host,
+            settings.smtp_port,
+            settings.sender_email,
+            [site_contact_email],
+            [],
+            'Research Subject Mapper Notification')
+
+        sftp_instance.send_file_to_uri(
+                remote_directory,
+                remote_file_name,
+                local_file_path,
+                email_props_sftp)
 
     elif action == 'email':
         # Send the subject_map_exceptions.csv to the contact email address as an attachment
         info = '\nSending file: [ %s ] as email attachement to: %s' % (local_file_path, site_contact_email)
         logger.info(info)
 
-        # @TODO change the mail body as required
         mail_body = 'Hi, \n this mail contains attached exceptions.csv file.'
-        email_transactions().send_mail(settings.sender_email,
-                                       site_contact_email, mail_body, [local_file_path])
+        props = EmailProps(
+            settings.smtp_host,
+            settings.smtp_port,
+            settings.sender_email,
+            [site_contact_email],
+            [],
+            'Research Subject Mapper Notification',
+            mail_body,
+            [local_file_path])
+
+        EmailSender().send(props)
     else:
         info = 'Invalid option. Either sftp/email should be used.'
         logger.warn(info)
@@ -320,7 +335,6 @@ def get_smi_and_parse(site_catalog_file, settings, logger):
     site_remotepath = dikt['site_remotepath']
     site_key_path = dikt['site_key_path']
     site_contact_email = dikt['site_contact_email']
-    sender_email = settings.sender_email
 
     file_name = os.path.basename(site_remotepath)
     site_localpath = os.path.join(configuration_directory, file_name)
@@ -329,8 +343,22 @@ def get_smi_and_parse(site_catalog_file, settings, logger):
     logger.info('Retrieving file: %s from %s:%s', site_remotepath, host, port)
     logger.info('Errors will be reported to: ' + site_contact_email)
 
-    sftp_instance = SFTPClient(host, sender_email, port, site_uname, site_password, site_key_path)
-    sftp_instance.get_file_from_uri(site_remotepath, site_localpath, site_contact_email)
+    email_props_sftp = EmailProps(
+        settings.smtp_host,
+        settings.smtp_port,
+        settings.sender_email,
+        [site_contact_email],
+        [],
+        'Research Subject Mapper Notification')
+
+    sftp_instance = SFTPClient(
+        host,
+        port,
+        site_uname,
+        site_password,
+        site_key_path)
+
+    sftp_instance.get_file_from_uri(site_remotepath, site_localpath, email_props_sftp)
     return site_localpath
 
 

@@ -24,6 +24,8 @@ import appdirs
 
 import gsm_lib
 from utils.sftpclient import SFTPClient
+from utils.emailsender import EmailProps
+from utils.emailsender import EmailSender
 from utils.redcap_transactions import redcap_transactions
 from utils import SimpleConfigParser
 
@@ -41,10 +43,9 @@ def main():
     # Configure logging
     logger = configure_logging(args['verbose'], args['logfile'])
 
-    settings = SimpleConfigParser.SimpleConfigParser()
-    settings.read(os.path.join(configuration_directory, 'settings.ini'))
-    settings.set_attributes()
-    gsm_lib.read_config(configuration_directory, 'settings.ini', settings)
+    conf_file = os.path.join(configuration_directory, 'settings.ini')
+    settings = gsm_lib.get_settings(conf_file)
+    gsm_lib.read_config(configuration_directory, conf_file, settings)
 
     # Check if xml_formatting_transform.xsl file is present/properly set in
     # setting.ini
@@ -221,8 +222,6 @@ def parse_site_details_and_send(site_catalog_file, subject_map_input, logger, se
         site_password = site.findtext('site_password')
         site_contact_email = site.findtext('site_contact_email')
         logger.debug("Site Contact Email: %s", site_contact_email)
-        sender_email = settings.sender_email
-        logger.debug("Sender Email: %s", sender_email)
 
         # Pick up the correct smi file with the code and place in the
         # destination as smi.xml at the specified remote path
@@ -232,10 +231,26 @@ def parse_site_details_and_send(site_catalog_file, subject_map_input, logger, se
         logger.info('Sending %s to %s: %s', site_localpath, host, site_remotepath)
         logger.debug('Any errors will be emailed to '+site_contact_email)
 
-        sftp_instance = SFTPClient(host, sender_email, port, site_uname, site_password,
-                                   private_key=site_key_path)
-        sftp_instance.send_file_to_uri(site_remotepath, 'smi.xml',
-                                       site_localpath, site_contact_email)
+        email_props_sftp = EmailProps(
+            settings.smtp_host,
+            settings.smtp_port,
+            settings.sender_email,
+            [site_contact_email],
+            [],
+            'Research Subject Mapper Notification')
+
+        sftp_instance = SFTPClient(
+                host,
+                port,
+                site_uname,
+                site_password,
+                private_key = site_key_path)
+
+        sftp_instance.send_file_to_uri(
+                site_remotepath,
+                'smi.xml',
+                site_localpath,
+                email_props_sftp)
 
         if keep_files:
             logger.debug('Keeping the temporary file: ' + site_localpath)

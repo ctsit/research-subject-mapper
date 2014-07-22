@@ -7,19 +7,17 @@ gsm_lib.py
         generate_subject_map.py and generate_subject_map_input.py
 """
 
-__author__      = ""
+__author__      = "CTS-IT team"
 __copyright__   = "Copyright 2014, University of Florida"
 __license__     = "BSD 3-Clause"
 __version__     = "0.1"
-__email__       = ""
-__status__      = "Development"
 
 import datetime
 import tempfile
 import logging
 import os
 from lxml import etree
-
+from bin.utils import SimpleConfigParser
 
 # This addresses the issues with relative paths
 file_dir = os.path.dirname(os.path.realpath(__file__))
@@ -68,9 +66,21 @@ class ConfigurationError(Exception):
     pass
 
 
-def read_config(configuration_directory, filename, settings):
-    """Read the config data from settings.ini"""
-    conf_file = os.path.join(configuration_directory, filename)
+def get_settings(config_file):
+    '''
+    TODO: call validate_settings
+    '''
+    settings = SimpleConfigParser.SimpleConfigParser()
+    settings.read(config_file)
+    settings.set_attributes()
+    return settings
+
+def read_config(configuration_directory, conf_file, settings):
+    '''
+    Read the config data from settings.ini
+    @TODO: Rename to `validate_settings` and make more generic.
+        Currently the function needs the settings file name to validate the settings
+    '''
 
     # check if the path is valid
     if not os.path.exists(conf_file):
@@ -159,11 +169,11 @@ def parse_host_and_port(raw) :
 
 def get_site_details_as_dict(file_path, site_type):
     """
-    Parses and returns the details from a site catalog
+    Parse and return the details from a site catalog
+        file_path: string - path to site catalog XML
+        site_type: string - valid values "data_source" or "data_destination"
 
-    :param file_path: path to site catalog XML
-    :param site_type: either "data_source" or "data_destination"
-    :return: a dictionary representation of a site from xml tree
+        return: dictionary - the representation of a site from xml tree
     """
     valid_site_types = ['data_source', 'data_destination']
     assert site_type in valid_site_types
@@ -178,7 +188,7 @@ def get_site_details_as_dict(file_path, site_type):
     site = sites_list.xpath("(/sites_list/site[@type='" + site_type + "'])[1]")[0]
     data['site_URI']            = handle_blanks( site.findtext('site_URI') )
     data['site_uname']          = handle_blanks( site.findtext('site_uname') )
-    data['site_password']       = site.findtext('site_password')
+    data['site_password']       = site.findtext('site_password').strip()
     data['site_remotepath']     = handle_blanks( site.findtext('site_remotepath') )
     data['site_contact_email']  = handle_blanks( site.findtext('site_contact_email') )
     data['site_key_path']       = handle_blanks( site.findtext('site_key_path') )
@@ -193,3 +203,5 @@ def makedirs(path):
     except os.error:
         if not os.path.exists(path):
             raise
+
+
