@@ -35,7 +35,7 @@ GSM_REQ_FIELDS = ['smtp_host_for_outbound_mail','system_log_file','send_email','
 GSM_REQ_FILES = ['source_data_schema_file', 'site_catalog']
 
 GSMI_REQ_FIELDS = ['system_log_file']
-GSMI_REQ_FILES = ['source_data_schema_file', 'site_catalog','xml_formatting_tranform_xsl']
+GSMI_REQ_FILES = ['source_data_schema_file', 'site_catalog','xml_formatting_transform_xsl']
 
 REDI_REQ_FIELDS = ['smtp_host_for_outbound_mail','system_log_file','send_email','receiver_email','redcap_uri','token']
 REDI_REQ_FILES = ['translation_table_file', 'form_events_file','research_id_to_redcap_id','component_to_loinc_code_xml','replace_fields_in_raw_data_xml','raw_xml_file']
