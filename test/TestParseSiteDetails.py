@@ -1,18 +1,23 @@
 import unittest
+import os, sys
 import tempfile
-import os
-import sys
 import pprint
 
 sys.path.append('bin/')
-import generate_subject_map
 import gsm_lib
 
 """
-    @author Andrei Sura
+TestParseSiteDetails.py
 
-    This class tests the function for reading sites xml into a dictionary
+   Unit test for  gsm_lib#get_site_details_as_dic()
 """
+
+__author__      = "CTS-IT team"
+__copyright__   = "Copyright 2014, University of Florida"
+__license__     = "BSD 3-Clause"
+__version__     = "0.1"
+
+
 class TestParseSiteDetails(unittest.TestCase):
 
     def test_get_site_details_as_dict(self):

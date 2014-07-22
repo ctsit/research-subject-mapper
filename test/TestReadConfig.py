@@ -1,24 +1,20 @@
+import os, sys
 import unittest
 import tempfile
-import os
-import sys
-file_dir = os.path.dirname(os.path.realpath(__file__))
-goal_dir = os.path.join(file_dir, "../")
-proj_root = os.path.abspath(goal_dir)+'/'
-sys.path.append(proj_root + 'bin/')
+
 import gsm_lib
-import utils.SimpleConfigParser as SimpleConfigParser
 
 class TestReadConfig(unittest.TestCase):
 
     def setUp(self):
         self.setupFolder = tempfile.mkdtemp() + "/"
-        self.setupFile = "settings.ini"
-        self.input = """system_log_file = log/rsm.log
+        self.input = """
+system_log_file = log/rsm.log
 source_data_schema_file = source_data_schema.xml
 site_catalog = site-catalog.xml
-sender_email = please-do-not-reply@ufl.edu"""
-        self.setupFileFullPath = self.setupFolder + self.setupFile
+sender_email = please-do-not-reply@ufl.edu
+"""
+        self.setupFileFullPath = self.setupFolder + 'settings.ini'
         f = open(self.setupFileFullPath, 'w')
         f.write(self.input)
         
@@ -31,10 +27,8 @@ sender_email = please-do-not-reply@ufl.edu"""
                 print("setUp failed to create file '" + file + "'")
 
     def test_readConfig(self):
-        settings = SimpleConfigParser.SimpleConfigParser()
-        settings.read(self.setupFileFullPath)
-        settings.set_attributes()
-        gsm_lib.read_config(self.setupFolder,self.setupFile, settings)
+        settings = gsm_lib.get_settings(self.setupFileFullPath)
+        gsm_lib.read_config(self.setupFolder, self.setupFileFullPath, settings)
         self.assertEqual(settings.system_log_file, "log/rsm.log")
         self.assertEqual(settings.source_data_schema_file,
             "source_data_schema.xml")
