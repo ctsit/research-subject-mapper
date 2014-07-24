@@ -93,7 +93,7 @@ Following parameters are required to have a value in settings.ini:
  - site_catalog
  - source_data_schema_file
  - sender_email
- - xml_formatting_tranform_xsl
+ - xml_formatting_transform_xsl
 The program terminates if they are missing or do not have a value in setings.ini. A message about this is displayed to the user before the program terminates. The same is also written to the log file.
 
 The parameter system_log_file in settings.ini is optional. If it is missing or does not have a value, the default value 'gsmi_log/gsmi.log' will be used.

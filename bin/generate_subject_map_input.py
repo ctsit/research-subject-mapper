@@ -52,21 +52,21 @@ def main():
     message2 = "Please set it with appropriate value and restart execution. " \
                "For assistance refer config-example-gsm-input/settings.ini." \
                "\nProgram will now terminate..."
-    if not settings.hasoption('xml_formatting_tranform_xsl'):
-        message = "Required parameter xml_formatting_tranform_xsl is missing " \
+    if not settings.hasoption('xml_formatting_transform_xsl'):
+        message = "Required parameter xml_formatting_transform_xsl is missing " \
                   "in settings.ini. " + message2
         logger.error(message)
         raise gsm_lib.ConfigurationError(message)
-    elif settings.xml_formatting_tranform_xsl == "":
-        message = "Required parameter xml_formatting_tranform_xsl does not " \
+    elif settings.xml_formatting_transform_xsl == "":
+        message = "Required parameter xml_formatting_transform_xsl does not " \
                   "have a value in settings.ini. " + message2
         logger.error(message)
         raise gsm_lib.ConfigurationError(message)
-    elif not os.path.exists(os.path.join(configuration_directory, settings.xml_formatting_tranform_xsl)):
-        message = "Required file xml_formatting_tranform.xsl does not exist " \
+    elif not os.path.exists(os.path.join(configuration_directory, settings.xml_formatting_transform_xsl)):
+        message = "Required file xml_formatting_transform.xsl does not exist " \
                   "in {0}. Please make sure this file is included in the " \
                   "configuration directory and restart execution. For " \
-                  "assistance refer config-example-gsm-input/xml_formatting_tranform.xsl." \
+                  "assistance refer config-example-gsm-input/xml_formatting_transform.xsl." \
                   "\nProgram will now terminate...".format(configuration_directory)
         logger.error(message)
         raise gsm_lib.ConfigurationError(message)
@@ -82,7 +82,7 @@ def main():
     xml_tree = etree.fromstring(response)
 
     #XSL Transformation 1: This transformation removes junk data, rename elements and extracts site_id and adds new tag site_id
-    transform_xsl = os.path.join(configuration_directory, settings.xml_formatting_tranform_xsl)
+    transform_xsl = os.path.join(configuration_directory, settings.xml_formatting_transform_xsl)
     xslt = etree.parse(transform_xsl)
     transform = etree.XSLT(xslt)
     xml_transformed = transform(xml_tree)
