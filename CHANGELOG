@@ -5,7 +5,7 @@
  * Document site-catalog.xml and source_data_schema.xml
  * Add key-based sftp authentication
  * Make tests in test.utils discoverable
- * Move the files date.date.template.xsl and xml_formatting_transform.xsl into local configuration data
+ * Move the files date.date.template.xsl and xml_formatting_tranform.xsl into local configuration data 
  
 2014-05-30 v0.8.0
 
@@ -27,7 +27,7 @@
 
  * Summary: First release
 
- * Update config-example-gsm-input/xml_formatting_transform.xsl to use the REDCap projects local subject ID (Philip Chase)
+ * Update config-example-gsm-input/xml_formatting_tranform.xsl to use the REDCap projects local subject ID (Philip Chase)
  * Update setup.py to reflect release (Philip Chase)
  * Fix name in liability clause of license (Philip Chase)
  * Update example files in config-example-gsm (Philip Chase)
