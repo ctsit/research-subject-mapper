@@ -1,3 +1,16 @@
+2014-07-24 v0.10.0
+
+ * Updated logging to conform to our Logging Guidelines
+ * Updated example configuration files to reflect changes in this version
+ * Corrected spelling of xml_formatting_tranform to xml_formatting_transform
+ * Reformatted files and removed unnecessary code for ease of reading
+ * Enhanced settings handling with better documentation as well as improved
+   warning and error messages
+ * Added a configuration checking tool: bin/utils/configuration_checker.py
+ * Fix bug where port number is set to NoneType, even if one is provided in
+   site-catalog.xml in site_URI for GSM
+ * Several updates to the makefile for developers' use
+
 2014-06-19 v0.9.0
 
  * Expand documentation
