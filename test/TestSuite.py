@@ -16,8 +16,10 @@ import unittest
     time test also will not be run even we addTest(<test_class>)
 '''
 from lxml import etree
-# from TestLog import TestLog
+from TestParseSiteDetails import TestParseSiteDetails
 from TestReadConfig import TestReadConfig
+from TestEmailSender import TestEmailSender
+
 class rsm_suite(unittest.TestSuite):
 
     def suite(self):
@@ -25,10 +27,10 @@ class rsm_suite(unittest.TestSuite):
         rsm_test_suite = unittest.TestSuite()
         
         # add the test to the suite in the order to be tested
-        # rsm_test_suite.addTest(TestLog)
+        redi_test_suite.addTest(TestParseSiteDetails)
         redi_test_suite.addTest(TestReadConfig)
-        
-        # return the suite
+        redi_test_suite.addTest(TestEmailSender)
+
         return unittest.TestSuite([rsm_test_suite])
 
 def main():

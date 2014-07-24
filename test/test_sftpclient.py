@@ -1,9 +1,10 @@
 __author__ = 'Taeber Rapczak <taeber@ufl.edu>'
 
-import os
-import contextlib
-import tempfile
+import os, sys
 from unittest import TestCase
+import tempfile
+import contextlib
+
 from bin.utils.sftpclient import SFTPClient
 
 
@@ -32,11 +33,16 @@ class SFTPClientTests(TestCase):
 
     def test_get(self):
         with temporary_file() as temp_filename:
-            sftp = SFTPClient('localhost', port=2222,
-                                     username='vagrant', password='vagrant')
-            sftp.get_file_from_uri(remotepath='/vagrant/Vagrantfile',
-                                   localpath=temp_filename,
-                                   contact_email=None)
+            sftp = SFTPClient(
+                    'localhost',
+                    port = 2222,
+                    username = 'vagrant',
+                    password = 'vagrant')
+
+            sftp.get_file_from_uri(
+                    remote_path = '/vagrant/Vagrantfile',
+                    local_path = temp_filename,
+                    props = None)
             self.assertFalse(os.stat(temp_filename)[6] == 0)
 
     def test_key_based_auth(self):

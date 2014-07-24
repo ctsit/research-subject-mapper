@@ -7,29 +7,26 @@ gsm_lib.py
         generate_subject_map.py and generate_subject_map_input.py
 """
 
-__author__      = ""
+__author__      = "CTS-IT team"
 __copyright__   = "Copyright 2014, University of Florida"
 __license__     = "BSD 3-Clause"
 __version__     = "0.1"
-__email__       = ""
-__status__      = "Development"
 
-import json
-import pprint
-import os
-import sys
 import datetime
-import contextlib
 import tempfile
-import shutil
+import logging
+import os
+from lxml import etree
+from bin.utils import SimpleConfigParser
 
 # This addresses the issues with relative paths
 file_dir = os.path.dirname(os.path.realpath(__file__))
 goal_dir = os.path.join(file_dir, "../")
 proj_root = os.path.abspath(goal_dir)+'/'
 
-sys.path.insert(0, proj_root+'bin/utils/')
-from GSMLogger import GSMLogger
+# Initialize a Logger for this module
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 
 '''
@@ -65,55 +62,63 @@ def write_element_tree_to_file(element_tree, file_name):
     element_tree.write(file_name, encoding="us-ascii", xml_declaration=True,method="xml")
 
 
-'''
-Read the config data from setup.json
-'''
-def read_config(configuration_directory, setup_json):
-    conf_file = configuration_directory + setup_json
+class ConfigurationError(Exception):
+    pass
+
+
+def get_settings(config_file):
+    '''
+    TODO: call validate_settings
+    '''
+    settings = SimpleConfigParser.SimpleConfigParser()
+    settings.read(config_file)
+    settings.set_attributes()
+    return settings
+
+def read_config(configuration_directory, conf_file, settings):
+    '''
+    Read the config data from settings.ini
+    @TODO: Rename to `validate_settings` and make more generic.
+        Currently the function needs the settings file name to validate the settings
+    '''
 
     # check if the path is valid
     if not os.path.exists(conf_file):
-        raise GSMLogger().LogException("Invalid path specified for conf file: " + setup_json)
-
-    try:
-        json_data = open(conf_file)
-    except IOError:
-        #raise logger.error
-        print "file " + conf_file + " could not be opened"
-        raise
-
-    setup = json.load(json_data)
-    json_data.close()
+        message = "Cannot find settings file: " + conf_file
+        logger.error(message)
+        raise ConfigurationError(message)
 
     # test for required parameters
-    required_parameters = ['source_data_schema_file', 'site_catalog',
-                    'system_log_file']
+    required_parameters = ['source_data_schema_file', 'site_catalog']
 
     for parameter in required_parameters:
-        if not parameter in setup:
-            raise GSMLogger().LogException("read_config: required parameter, "
-                + parameter  + "', is not set in " + conf_file)
+        if not settings.hasoption(parameter):
+            message = "read_config: required parameter, \'{0}\', is missing " \
+                      "in {1}. Please set it with appropriate value. For " \
+                      "assistance refer settings.ini in config-example folder." \
+                      "\nProgram will now \nterminate...".format(parameter, conf_file)
+            logger.error(message)
+            raise ConfigurationError(message)
+        elif settings.getoption(parameter) == "":
+            message = "read_config: required parameter, \'{0}\', is not set " \
+                      "in {1}. Please set it with appropriate value. For " \
+                      "assistance refer settings.ini in config-example folder." \
+                      "\nProgram will now terminate...".format(parameter, conf_file)
+            logger.error(message)
+            raise ConfigurationError(message)
 
     # test for required files but only for the parameters that are set
     files = ['source_data_schema_file', 'site_catalog']
     for item in files:
-        if item in setup:
-            if(item == 'system_log_file'):
-                file_path = proj_root + 'log/'
-                if not os.path.exists(file_path):
-                    try:
-                        os.makedirs(file_path)
-                    except OSError:
-                        print "Unable to create folder: " + file_path
-            else:
-                file_path = configuration_directory + setup[item]
-
-            if not os.path.exists(file_path):
-                print 'Checking existence of file: ' + file_path
-                raise GSMLogger().LogException("read_config: " + item
-                    + " file, '" + setup[item] + "', specified in " + conf_file + " does not exist")
-    return setup
-
+        if settings.hasoption(item) and not os.path.exists(
+                os.path.join(configuration_directory, settings.getoption(item))):
+            message = "read_config: {0} file, '{1}', specified in {2} does not " \
+                      "exist. Please make sure this file is included in {3}. " \
+                      "For assistance refer settings.ini in config-example folder." \
+                      "\nProgram will now terminate..."\
+                .format(item, settings.getoption(item), conf_file, configuration_directory)
+            logger.error(message)
+            raise ConfigurationError(message)
 
 
 '''
@@ -141,15 +146,62 @@ else
 '''
 def get_temp_path(do_keep_gen_files) :
     if do_keep_gen_files :
-        return create_temp_dir_debug() + '/'
+        return create_temp_dir_debug('.') + '/'
     else :
         return tempfile.mkdtemp('/')
 
 
-def parse_host_and_port(raw):
-    """Returns a tuple comprising hostname and port number from raw text"""
-    host_and_port = raw.split(':')
-    if len(host_and_port) == 2:
-        return host_and_port
-    else:
-        return raw, None
+"""
+    Returns a tuple comprising hostname and port number from raw text
+    Example:
+        From raw: sftp.example.com:1234
+        Return  : [sftp.example.com, 1234]
+"""
+def parse_host_and_port(raw) :
+    import re
+    parse_uri = '(?:http.*://)?(?P<host>[^:/ ]+).?(?P<port>[0-9]*).*'
+    m = re.search(parse_uri,raw)
+    port = m.group('port')
+    if not port:
+        port = 22
+    return [m.group('host'),port]
+
+
+def get_site_details_as_dict(file_path, site_type):
+    """
+    Parse and return the details from a site catalog
+        file_path: string - path to site catalog XML
+        site_type: string - valid values "data_source" or "data_destination"
+
+        return: dictionary - the representation of a site from xml tree
+    """
+    valid_site_types = ['data_source', 'data_destination']
+    assert site_type in valid_site_types
+
+    data = {}
+    try:
+        sites_list = etree.parse(file_path)
+    except IOError:
+        logger.exception("Could not open XML file at: " + file_path)
+        raise
+
+    site = sites_list.xpath("(/sites_list/site[@type='" + site_type + "'])[1]")[0]
+    data['site_URI']            = handle_blanks( site.findtext('site_URI') )
+    data['site_uname']          = handle_blanks( site.findtext('site_uname') )
+    data['site_password']       = site.findtext('site_password').strip()
+    data['site_remotepath']     = handle_blanks( site.findtext('site_remotepath') )
+    data['site_contact_email']  = handle_blanks( site.findtext('site_contact_email') )
+    data['site_key_path']       = handle_blanks( site.findtext('site_key_path') )
+
+    return data
+
+
+def makedirs(path):
+    """Like os.makedirs() but suppresses error if path already exists."""
+    try:
+        os.makedirs(path)
+    except os.error:
+        if not os.path.exists(path):
+            raise
+
+
