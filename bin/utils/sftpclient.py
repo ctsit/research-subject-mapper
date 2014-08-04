@@ -1,6 +1,9 @@
-import os, pysftp
+import os
+import pysftp
+import logging
 
-#from emailsender import EmailSender
+from emailsender import EmailSender
+
 
 class SFTPClient:
     """A class for handling the sftp transactions. This class contains
@@ -49,7 +52,7 @@ class SFTPClient:
             if props:
                 # include the exception in the email body
                 props.msg_body = error
-                EmailSender.send(props)
+                EmailSender().send(props)
 
         return
 

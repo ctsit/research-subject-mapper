@@ -1,3 +1,7 @@
+2014-08-04 v0.10.1
+
+ * HOTFIX: added missing import statements
+
 2014-07-24 v0.10.0
 
  * Updated logging to conform to our Logging Guidelines
