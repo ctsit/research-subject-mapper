@@ -2,7 +2,9 @@ import os
 from unittest import TestCase
 import tempfile
 import contextlib
+import logging
 
+from bin.utils.emailsender import EmailProps
 from bin.utils.sftpclient import SFTPClient
 
 
@@ -52,6 +54,17 @@ class SFTPClientTests(TestCase):
         with temporary_key(filename=key_path):
             sftp = SFTPClient(server, port, username, private_key=key_path)
             sftp.put(os.path.realpath(__file__), os.path.basename(__file__))
+
+    def test_import_statements(self):
+        """Tests to make sure all the modules were imported correctly"""
+        class Props(object):
+            pass
+
+        logging.basicConfig(level=1000)
+        sftp = SFTPClient('fake-hostname--dot-com')
+        props = EmailProps('fake-hostname--dot-com', 22, 'get@me', [])
+        sftp.get_file_from_uri('/path/does/not/exist', '/path/no/good', props)
+
 
 @contextlib.contextmanager
 def temporary_file():
