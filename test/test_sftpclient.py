@@ -1,6 +1,4 @@
-__author__ = 'Taeber Rapczak <taeber@ufl.edu>'
-
-import os, sys
+import os
 from unittest import TestCase
 import tempfile
 import contextlib
