@@ -3,16 +3,16 @@ from setuptools import setup, find_packages
 # Research Subject Mapper
 #
 # Can be installed from the tgz file in two steps:
-#   
+#
 #   tar xvzf rsm.a.b.c.tar.gz
 #   python setup.py install
-# 
-# Note: the OS needs to have 
+#
+# Note: the OS needs to have
 #   apt-get install setuptools python-dev libxml2 libxslt1-dev
 
 setup(
     name='rsm',
-    version='0.10.0',
+    version='0.10.1',
     author='Christopher P Barnes, Philip Chase, Nicholas Rejack',
     author_email='cpb@ufl.edu, pbc@ufl.edu, nrejack@ufl.edu',
     packages=find_packages(),
