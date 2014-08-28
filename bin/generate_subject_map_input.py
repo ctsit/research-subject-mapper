@@ -106,7 +106,7 @@ def main():
 
     # Loop through the start_date elements and update theur values
     for k in tree.iter('start_date'):
-        d = datetime.datetime.strptime(k.text, "%Y-%m-%d").date()-timedelta(days=180)
+        d = datetime.datetime.strptime(k.text, "%Y-%m-%d").date()-timedelta(days=365)
         k.text = str(d)
 
     #writing data to smi+site_code.xml. This xml will be saved to sftp of the site as smi.xml
