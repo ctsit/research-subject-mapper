@@ -1,3 +1,8 @@
+2014-08-28 v0.10.2
+
+ * Adjust version requirements for pysftp to fix attribute error
+ * Change hard-coded time delta from 180 days to 365 days
+
 2014-08-04 v0.10.1
 
  * HOTFIX: added missing import statements
@@ -22,8 +27,8 @@
  * Document site-catalog.xml and source_data_schema.xml
  * Add key-based sftp authentication
  * Make tests in test.utils discoverable
- * Move the files date.date.template.xsl and xml_formatting_tranform.xsl into local configuration data 
- 
+ * Move the files date.date.template.xsl and xml_formatting_tranform.xsl into local configuration data
+
 2014-05-30 v0.8.0
 
  * Add a configurable path to the configuration directory
@@ -153,4 +158,3 @@
  * Change gitignore to remove bin directory from the list and add bin folder to the repository (Mohan Das Katragadda)
  * Add TestSuite for the research-subject-mapper (Radha Kandula)
  * Initial commit (pbchase)
- 

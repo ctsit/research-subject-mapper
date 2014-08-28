@@ -12,7 +12,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='rsm',
-    version='0.10.1',
+    version='0.10.2',
     author='Christopher P Barnes, Philip Chase, Nicholas Rejack',
     author_email='cpb@ufl.edu, pbc@ufl.edu, nrejack@ufl.edu',
     packages=find_packages(),
@@ -25,7 +25,7 @@ setup(
     license='BSD 3-Clause',
     description='A suite of tools to curate and manage the people identifiers in a multi-site clinical research project.',
     long_description=open('README.md').read(),
-    install_requires=["requests >= 2.2.1","lxml >= 3.3.5","pysftp >= 0.2.6", "appdirs"],
+    install_requires=["requests >= 2.2.1","lxml >= 3.3.5","pysftp >= 0.2.8", "appdirs"],
     entry_points={
             'console_scripts': [
                 'gsmi = bin.generate_subject_map_input:main',
