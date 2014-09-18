@@ -2,7 +2,7 @@
 import os, sys
 import unittest
 
-sys.path.append('bin/utils')
+sys.path.append('rsm/utils')
 
 import gsm_lib
 from emailsender import EmailProps
