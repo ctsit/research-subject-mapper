@@ -3,7 +3,7 @@ import os, sys
 import tempfile
 import pprint
 
-sys.path.append('bin/')
+sys.path.append('rsm/')
 import gsm_lib
 
 """

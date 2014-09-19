@@ -89,13 +89,13 @@ def main():
     xml_str = etree.tostring(xml_transformed, method='xml', pretty_print=True)
 
     #XSL Transformation 2: This transformation groups the data based on site_id
-    transform2_xsl = proj_root + 'bin/utils/groupby_siteid_transform.xsl'
+    transform2_xsl = proj_root + 'rsm/utils/groupby_siteid_transform.xsl'
     xslt = etree.parse(transform2_xsl)
     transform = etree.XSLT(xslt)
     xml_transformed2 = transform(xml_transformed)
 
     #XSL Transformation 3: This transformation removes all the nodes which are not set
-    transform3_xsl = proj_root + 'bin/utils/remove_junktags_transform.xsl'
+    transform3_xsl = proj_root + 'rsm/utils/remove_junktags_transform.xsl'
     xslt = etree.parse(transform3_xsl)
     transform = etree.XSLT(xslt)
     xml_transformed3 = transform(xml_transformed2)
