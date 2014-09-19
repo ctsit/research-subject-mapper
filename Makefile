@@ -25,7 +25,7 @@ sdist:
 	python setup.py sdist
 
 compile:
-	python -m compileall bin
+	python -m compileall rsm
 	python -m compileall test
 
 devconfig:
@@ -34,13 +34,13 @@ devconfig:
 
 test_gsm:
 	@test -d gsm-devconfig || echo "Please create the 'gsm-devconfig' folder first"
-	@echo "Executing bin/generate_subject_map.py ..."
-	python bin/generate_subject_map.py -c gsm-devconfig -k -v
+	@echo "Executing rsm/generate_subject_map.py ..."
+	PYTHONPATH=. python rsm/generate_subject_map.py -c gsm-devconfig -k -v
 
 test_gsmi:
 	@test -d gsmi-devconfig || echo "Please create the 'gsmi-devconfig' folder first"
-	@echo 'Executing bin/generate_subject_map_input.py ...'
-	python bin/generate_subject_map_input.py -c gsmi-devconfig -k -v 
+	@echo 'Executing rsm/generate_subject_map_input.py ...'
+	PYTHONPATH=. python rsm/generate_subject_map_input.py -c gsmi-devconfig -k -v
 
 coverage:
 	which figleaf || sudo easy_install figleaf
@@ -51,7 +51,7 @@ coverage:
 test: tests
 tests:
 	PYTHONPATH=. python -munittest discover test
-	python test/TestSuite.py
+	PYTHONPATH=. python test/TestSuite.py
 
 clean:
 	find . -type f -name *.pyc -print | xargs rm -f
