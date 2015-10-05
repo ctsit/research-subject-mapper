@@ -28,7 +28,8 @@ class SFTPClient:
         try:
             self.put(local_path, os.path.join(remote_path, file_name))
         except Exception, e:
-            error = 'There was an error sending file %s to %s: %s' % (file_name, self._hostname, str(e))
+            error = 'There was an error sending file %s to %s: %s\n' % (file_name, self._hostname, str(e))
+            error = error + "SFTP file location: " + remote_path
             logging.error(error)
             logging.error('Please check the credentials/remotepath/localpath/Server URI')
 
