@@ -14,6 +14,8 @@ __status__ = "Development"
 
 import xml.etree.ElementTree as ET
 import logging
+from logging.handlers import TimedRotatingFileHandler
+import time
 import os
 import datetime
 from datetime import timedelta
@@ -153,7 +155,7 @@ def parse_args():
     return vars(parser.parse_args())
 
 
-def configure_logging(verbose=False, logfile=None):
+def configure_logging(verbose=False, logfile=None, when='D', interval=1, backup_count=31):
     """Configures the Logger"""
     application = appdirs.AppDirs(appname='research-subject-mapper', appauthor='University of Florida')
 
@@ -178,7 +180,7 @@ def configure_logging(verbose=False, logfile=None):
     # create a file handler
     file_handler = None
     try:
-        file_handler = logging.FileHandler(filename)
+        file_handler = TimedRotatingFileHandler(filename, when, interval, backup_count)
     except IOError:
         logger.exception('Could not open file for logging "%s"', filename)
 
