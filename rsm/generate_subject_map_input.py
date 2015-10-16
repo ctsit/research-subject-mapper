@@ -154,7 +154,8 @@ def parse_args():
 
     return vars(parser.parse_args())
 
-
+#TODO make logging interval and backup count configurable
+#TODO add compression to log files
 def configure_logging(verbose=False, logfile=None, when='D', interval=1, backup_count=31):
     """Configures the Logger"""
     application = appdirs.AppDirs(appname='research-subject-mapper', appauthor='University of Florida')
