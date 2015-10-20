@@ -4,8 +4,8 @@ import tempfile
 import contextlib
 import logging
 
-from bin.utils.emailsender import EmailProps
-from bin.utils.sftpclient import SFTPClient
+from rsm.utils.emailsender import EmailProps
+from rsm.utils.sftpclient import SFTPClient
 
 
 class SFTPClientTests(TestCase):

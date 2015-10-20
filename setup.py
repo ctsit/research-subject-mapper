@@ -17,7 +17,7 @@ setup(
     author_email='cpb@ufl.edu, pbc@ufl.edu, nrejack@ufl.edu',
     packages=find_packages(),
     include_package_data=True,
-    package_data={'bin': ['utils/*.xsl'],'config-example-gsm': ['*'],'config-example-gsm-input': ['*']},
+    package_data={'rsm': ['utils/*.xsl'],'config-example-gsm': ['*'],'config-example-gsm-input': ['*']},
     data_files={
             'README.md'
         },
@@ -28,8 +28,8 @@ setup(
     install_requires=["requests >= 2.2.1","lxml >= 3.3.5","pysftp >= 0.2.8", "appdirs"],
     entry_points={
             'console_scripts': [
-                'gsmi = bin.generate_subject_map_input:main',
-                'gsm = bin.generate_subject_map:main'
+                'gsmi = rsm.generate_subject_map_input:main',
+                'gsm = rsm.generate_subject_map:main'
                 ],
             },
     classifiers=[

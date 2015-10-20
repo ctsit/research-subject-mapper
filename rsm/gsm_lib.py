@@ -17,7 +17,7 @@ import tempfile
 import logging
 import os
 from lxml import etree
-from bin.utils import SimpleConfigParser
+from rsm.utils import SimpleConfigParser
 
 # This addresses the issues with relative paths
 file_dir = os.path.dirname(os.path.realpath(__file__))

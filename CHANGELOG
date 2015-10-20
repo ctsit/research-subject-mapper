@@ -1,3 +1,17 @@
+2015-10-20 v0.10.3
+ * Summary: Improving logging by making messages more informative and adding
+ rotation.
+
+ * Adding TODOs for future log rotation work. (Nicholas Rejack)
+ * Adding timed log rotation. Default behavior rotates every day, and keeps a total of 31 days of logs. (Nicholas Rejack)
+ * sftpclient.py now logs the directory that caused an error. (Nicholas Rejack)
+ * Adding improved logging to generate_subject_map_input.py (Nicholas Rejack)
+ * created data dictionary for non GSM HCV sites that includes enrollment and end of treatment dates (Kevin Steven Hanson)
+ * Shorthen the lines in README.md (Andrei Sura)
+ * Fix unit test so we can call from Makefile: make test make test_gsm make test_gsmi (Andrei Sura)
+ * Renamed `makefile -> Makefile` to be consistent (Andrei Sura)
+ * Rename ./bin to ./rsm (Taeber Rapczak)
+ 
 2014-08-28 v0.10.2
 
  * Adjust version requirements for pysftp to fix attribute error
