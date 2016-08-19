@@ -1,3 +1,6 @@
+2016-08-19 v0.10.4
+ * Add the person_index_transform.xsl to the repository
+
 2015-10-20 v0.10.3
  * Summary: Improving logging by making messages more informative and adding
  rotation.
@@ -11,7 +14,7 @@
  * Fix unit test so we can call from Makefile: make test make test_gsm make test_gsmi (Andrei Sura)
  * Renamed `makefile -> Makefile` to be consistent (Andrei Sura)
  * Rename ./bin to ./rsm (Taeber Rapczak)
- 
+
 2014-08-28 v0.10.2
 
  * Adjust version requirements for pysftp to fix attribute error
