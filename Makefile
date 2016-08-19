@@ -22,7 +22,7 @@ bdist:
 	python setup.py bdist
 
 sdist:
-	python setup.py sdist
+	python setup.py sdist --formats=gztar,zip
 
 compile:
 	python -m compileall rsm
