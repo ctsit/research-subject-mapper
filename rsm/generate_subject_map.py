@@ -37,7 +37,11 @@ def main():
     args = parse_args()
     configuration_directory = os.path.abspath(args['configuration_directory_path'])
     do_keep_gen_files = args['keep']
-    debugging = args['debug']
+
+    if 'debug' in args:
+        debugging = args['debug']
+    else:
+        debugging = False
 
     # Configure logging
     logger = configure_logging(args['verbose'], args['logfile'])
