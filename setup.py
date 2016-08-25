@@ -12,7 +12,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='rsm',
-    version='0.10.4',
+    version='0.10.5',
     author='Christopher P Barnes, Philip Chase, Nicholas Rejack',
     author_email='cpb@ufl.edu, pbc@ufl.edu, nrejack@ufl.edu',
     packages=find_packages(),
