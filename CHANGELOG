@@ -1,3 +1,8 @@
+2016-08-25 v0.10.5
+* Make exception handling for the debugging flag in the gsm script (Roy Keyes)
+* Add the optional redcap log file setting to the example gsm config (Roy Keyes)
+* Add debugging feature to gsm, the -d option (Roy Keyes)
+
 2016-08-19 v0.10.4
  * Add the person_index_transform.xsl to the repository
 
