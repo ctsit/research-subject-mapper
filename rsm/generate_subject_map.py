@@ -38,6 +38,11 @@ def main():
     configuration_directory = os.path.abspath(args['configuration_directory_path'])
     do_keep_gen_files = args['keep']
 
+    if 'debug' in args:
+        debugging = args['debug']
+    else:
+        debugging = False
+
     # Configure logging
     logger = configure_logging(args['verbose'], args['logfile'])
 
@@ -46,6 +51,12 @@ def main():
     gsm_lib.read_config(configuration_directory, conf_file, settings)
     site_catalog_file = os.path.join(configuration_directory, settings.site_catalog)
 
+    if debugging:
+        if settings.redcap_log_file:
+            redcap_log_file = os.path.join(configuration_directory, settings.redcap_log_file)
+        else:
+            redcap_log_file = 'redcap.log.xml'
+
     # Initialize Redcap Interface
     rt = redcap_transactions()
     rt.configuration_directory = configuration_directory
@@ -53,13 +64,33 @@ def main():
     properties = rt.init_redcap_interface(settings, logger)
     # gets data from the person index for the fields listed in the source_data_schema.xml
     response = rt.get_data_from_redcap(properties, logger)
-    xml_tree = etree.fromstring(response)
 
-    #XSL Transformation : transforms the person_index data
-    transform_xsl = proj_root + "rsm/utils/person_index_transform.xsl"
-    xslt = etree.parse(transform_xsl)
-    transform = etree.XSLT(xslt)
-    person_index_data = transform(xml_tree)
+    if debugging:
+        try:
+            print('Writing REDCap response to file: ')
+            with open(redcap_log_file, 'w') as log_file:
+                log_file.write(response)
+        except:
+            print('Unable to write the REDCap response to ' + redcap_log_file)
+
+    try:
+        xml_tree = etree.fromstring(response)
+
+        #XSL Transformation : transforms the person_index data
+        transform_xsl = proj_root + "rsm/utils/person_index_transform.xsl"
+        xslt = etree.parse(transform_xsl)
+        transform = etree.XSLT(xslt)
+        person_index_data = transform(xml_tree)
+    except Exception as xe:
+        if debugging:
+            print('Unable to transform data returned by REDCap:')
+            print('REDCap response logged to ' + redcap_log_file)
+            print('Ecountered the following error:')
+            print(xe)
+            exit()
+        else:
+            print('Unable to transform data returned by REDCap:')
+            exit()
 
     # # # retrieve smi.xml from the sftp server
     smi_path = get_smi_and_parse(site_catalog_file, settings, logger)
@@ -184,6 +215,10 @@ def parse_args():
                         dest='configuration_directory_path',
                         default=proj_root + 'config/',
                         help='Specify the path to the configuration directory')
+
+    parser.add_argument('-d', '--debug', required=False,
+                        default=False, action='store_true',
+                        help='enable debugging')
 
     parser.add_argument('-k', '--keep', required=False,
                         default=False, action='store_true',
