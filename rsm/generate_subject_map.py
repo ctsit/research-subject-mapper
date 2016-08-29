@@ -39,7 +39,10 @@ def main():
     do_keep_gen_files = args['keep']
 
     if 'debug' in args:
-        debugging = args['debug']
+        if args['debug']:
+            debugging = args['debug']
+        else:
+            debugging = False
     else:
         debugging = False
 
