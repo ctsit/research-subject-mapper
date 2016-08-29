@@ -39,7 +39,14 @@ def main():
     do_keep_gen_files = args['keep']
 
     if 'debug' in args:
+<<<<<<< Updated upstream
         debugging = args['debug']
+=======
+        if args['debug']:
+            debugging = args['debug']
+        else:
+            debugging = False
+>>>>>>> Stashed changes
     else:
         debugging = False
 
