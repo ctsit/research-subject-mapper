@@ -1,3 +1,6 @@
+2016-09-08 v0.10.7
+* Updated the release number to 0.10.7 (Buck72)
+
 2016-09-08 v0.10.6
  * Remove conflict resolution on gsm code (Roy Keyes)
  * Add debugging flag and try/except to gsmi (Roy Keyes)
