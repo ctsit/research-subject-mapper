@@ -1,3 +1,7 @@
+2016-09-08 v0.10.6
+ * Remove conflict resolution on gsm code (Roy Keyes)
+ * Add debugging flag and try/except to gsmi (Roy Keyes)
+
 2016-08-25 v0.10.5
 * Make exception handling for the debugging flag in the gsm script (Roy Keyes)
 * Add the optional redcap log file setting to the example gsm config (Roy Keyes)
